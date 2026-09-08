@@ -10,8 +10,12 @@ const ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyz'
 
 /** Crypto-quality random suffix; falls back to Math.random only if unavailable. */
 function randomPart(length: number): string {
-  const g = globalThis as { crypto?: Crypto }
-  if (g.crypto?.getRandomValues) {
+  // Typed structurally rather than as DOM's `Crypto`, because this module is
+  // compiled for both the Node main process and the browser renderer.
+  const g = globalThis as {
+    crypto?: { getRandomValues?<T extends ArrayBufferView>(array: T): T }
+  }
+  if (typeof g.crypto?.getRandomValues === 'function') {
     const bytes = new Uint8Array(length)
     g.crypto.getRandomValues(bytes)
     let out = ''
