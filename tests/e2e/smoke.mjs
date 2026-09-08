@@ -355,6 +355,22 @@ try {
   await shot('08-settings')
   check('Settings renders', (await page.locator('text=Vault, backups & transfer').count()) > 0)
 
+  // Automatic locking. The control must exist, be wired to the device
+  // preference, and actually close the vault — a stored setting that nothing
+  // acts on would be a dead button with extra steps.
+  await page.locator('.settings-tabs button:has-text("Preferences"), button:has-text("Preferences")').first().click()
+  await page.waitForTimeout(700)
+  const lockControl = page.locator('#dev-lock')
+  check('the automatic lock control is on screen', (await lockControl.count()) === 1)
+  await lockControl.selectOption('5')
+  await page.waitForTimeout(500)
+  const lockPref = await invoke('device.get', {})
+  check('choosing a lock delay is saved for this device', lockPref.ok && lockPref.data.autoLockMinutes === 5)
+  await lockControl.selectOption('0')
+  await page.waitForTimeout(400)
+  await page.locator('button:has-text("Vault, backups & transfer")').first().click()
+  await page.waitForTimeout(600)
+
   // Dark theme, because "excellent light and dark themes" is a requirement.
   await invoke('settings.set', { theme: 'dark' })
   await page.waitForTimeout(700)

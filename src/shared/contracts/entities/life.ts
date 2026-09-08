@@ -670,7 +670,10 @@ export const lifeEntities: EntityDescriptor[] = [
     emptyState: 'Who does what, how often, and what it is worth in pocket money.',
     fields: [
       f.text('title', 'Chore', { required: true, span: 2, inList: true }),
-      f.ref('assignee_person_id', 'Whose job', 'person', { inList: true }),
+      f.ref('assignee_person_id', 'Whose job', 'person', {
+        inList: true,
+        help: 'A label so you know whose job it is. It does not give anyone access to your vault.'
+      }),
       f.recurrence('schedule_rule', 'How often'),
       f.date('anchor_date', 'Starting'),
       f.text('area', 'Area', { inList: true }),

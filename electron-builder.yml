@@ -1,0 +1,119 @@
+# Packaging configuration for Orbit.
+#
+# Targets, as the specification requires:
+#   macOS  — Apple Silicon (arm64) and Intel (x64), as separate artefacts
+#   Windows — x64 installer and a portable executable
+#
+# There is no universal macOS binary. Two per-architecture builds are produced
+# instead, which is smaller for the person downloading one and does not need
+# lipo to have worked correctly on a machine nobody has tested.
+#
+# There is no Linux target. Orbit is specified for macOS and Windows, and
+# shipping an untested Linux build would be a promise nobody had checked.
+#
+# A note on what one executable can and cannot do, because it matters:
+#   The APPLICATION is per-platform and per-architecture. A macOS build will not
+#   run on Windows and an Apple Silicon build is not an Intel build.
+#   The VAULT is not. One vault folder opens in any of these builds, on either
+#   operating system, on either processor family. That is the whole point of the
+#   format, and it is what "portable" means here.
+
+appId: uk.orbit.app
+productName: Orbit
+copyright: Copyright © 2026 Orbit
+
+directories:
+  buildResources: build
+  output: release/${version}
+
+files:
+  - out/**/*
+  - package.json
+  - '!**/*.map'
+  - '!**/{.eslintrc,.editorconfig,.prettierrc}'
+
+# Orbit has no native modules. Persistence uses node:sqlite, which is built into
+# the Electron runtime, so there is nothing to compile per architecture and no
+# prebuild to go missing. This is a large part of why cross-platform packaging
+# is straightforward here.
+npmRebuild: false
+
+# No update server, and no check for one. Orbit makes no network requests.
+publish: null
+
+# ---------------------------------------------------------------------------
+# macOS
+# ---------------------------------------------------------------------------
+mac:
+  category: public.app-category.productivity
+  # 11.0 is the first release with Apple Silicon support, so it is the floor
+  # for a build that claims to support both architectures.
+  minimumSystemVersion: '11.0'
+  darkModeSupport: true
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  # A signing identity is only used when one is available in the environment.
+  # Without it electron-builder produces an unsigned, un-notarised build, which
+  # macOS will quarantine. See docs/PACKAGING.md — this is stated rather than
+  # papered over.
+  target:
+    - target: dmg
+      arch: [arm64, x64]
+    - target: zip
+      arch: [arm64, x64]
+  extendInfo:
+    # Orbit never asks for these. Declaring them absent is clearer than leaving
+    # the question open.
+    NSCameraUsageDescription: Orbit does not use the camera.
+    NSMicrophoneUsageDescription: Orbit does not use the microphone.
+    LSApplicationCategoryType: public.app-category.productivity
+
+dmg:
+  artifactName: ${productName}-${version}-${arch}.${ext}
+  contents:
+    - x: 130
+      y: 220
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
+
+# ---------------------------------------------------------------------------
+# Windows
+# ---------------------------------------------------------------------------
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: portable
+      arch: [x64]
+  artifactName: ${productName}-${version}-${arch}-${target}.${ext}
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Orbit
+  # The uninstaller must never touch a vault. Vaults live wherever the user
+  # chose, and removing the application is not permission to remove their data.
+  deleteAppDataOnUninstall: false
+
+portable:
+  artifactName: ${productName}-${version}-portable.${ext}
+  # The portable build unpacks beside itself and looks for an "Orbit Vault"
+  # folder next to the executable. See docs/PORTABLE.md.
+  requestExecutionLevel: user
+  unpackDirName: Orbit
+
+# ---------------------------------------------------------------------------
+# Things deliberately not enabled
+# ---------------------------------------------------------------------------
+# afterSign:  no notarisation hook is wired up, because there are no Apple
+#             credentials in this repository to notarise with. Adding one that
+#             silently does nothing would be worse than leaving it out.
+# electronDownload: left at the default. The Electron binary is fetched from
+#             GitHub at build time on the machine doing the packaging.

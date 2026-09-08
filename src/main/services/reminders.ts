@@ -443,6 +443,80 @@ export class RemindersService {
       }
     })
 
+    // --- Servicing that is due on distance rather than a date ----------------
+    /*
+     * "Every 12 months or 12,000 miles, whichever comes first." The date half is
+     * handled above; this is the mileage half, compared against the most recent
+     * odometer reading for that vehicle.
+     */
+    safely('servicing due on mileage', () => {
+      const rows = this.db.all<{
+        id: string
+        title: string
+        asset_id: string
+        asset_name: string
+        next_due_distance: number | null
+        distance_unit: string
+        latest: number | null
+        latest_on: string | null
+      }>(
+        `SELECT m.id, m.title, m.asset_id, a.name AS asset_name, m.next_due_distance, m.distance_unit,
+                (SELECT o.distance FROM odometer_readings o WHERE o.asset_id = m.asset_id ORDER BY o.on_date DESC LIMIT 1) AS latest,
+                (SELECT o.on_date  FROM odometer_readings o WHERE o.asset_id = m.asset_id ORDER BY o.on_date DESC LIMIT 1) AS latest_on
+           FROM maintenance_schedules m JOIN assets a ON a.id = m.asset_id
+          WHERE m.active = 1 AND m.next_due_distance IS NOT NULL`
+      )
+      for (const row of rows) {
+        if (row.latest == null || row.next_due_distance == null) continue
+        const remaining = row.next_due_distance - row.latest
+        // Warn inside the last 750 miles, or immediately once it is past.
+        if (remaining > 750) continue
+        const unit = row.distance_unit === 'km' ? 'km' : 'miles'
+        items.push({
+          id: `maintenance_distance:${row.id}`,
+          severity: remaining <= 0 ? 'overdue' : 'soon',
+          // Distance is not time, so this is reported as an unscheduled item
+          // rather than pretending to know which day it will fall on.
+          daysAway: remaining <= 0 ? -1 : 0,
+          date: null,
+          title: `${row.title} — ${row.asset_name}`,
+          detail:
+            remaining <= 0
+              ? `Due at ${row.next_due_distance.toLocaleString('en-GB')} ${unit}; last reading was ${row.latest.toLocaleString('en-GB')}`
+              : `About ${remaining.toLocaleString('en-GB')} ${unit} to go (last reading ${row.latest.toLocaleString('en-GB')}${row.latest_on ? ` on ${row.latest_on}` : ''})`,
+          entityType: 'maintenance_schedule',
+          entityId: row.id,
+          module: 'vehicles',
+          action: 'Book'
+        })
+      }
+    })
+
+    // --- People you meant to stay in touch with ------------------------------
+    safely('catch-ups', () => {
+      const rows = this.db.all<{ id: string; display_name: string; catch_up_days: number; last_contact_on: string | null }>(
+        `SELECT id, display_name, catch_up_days, last_contact_on FROM people
+          WHERE archived_at IS NULL AND catch_up_days IS NOT NULL AND catch_up_days > 0`
+      )
+      for (const row of rows) {
+        // With no recorded contact there is nothing to count from, so Orbit
+        // waits rather than inventing a date.
+        if (!row.last_contact_on) continue
+        const due = addDays(row.last_contact_on, Math.max(1, Number(row.catch_up_days) || 0))
+        if (due > limit) continue
+        push(
+          { id: row.id, title: row.display_name, date: due },
+          {
+            entityType: 'person',
+            module: 'relationships',
+            soonDays: 7,
+            action: 'Get in touch',
+            detail: `Last in touch ${row.last_contact_on}`
+          }
+        )
+      }
+    })
+
     // --- Explicit reminders and tasks ----------------------------------------
     safely('reminders', () => {
       const rows = this.db.all<SourceRow>(

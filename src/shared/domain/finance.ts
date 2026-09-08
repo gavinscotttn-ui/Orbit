@@ -282,6 +282,15 @@ export function calculatePayroll(input: PayrollInput): PayrollBreakdown {
   const periods = PERIODS_PER_YEAR[input.frequency]
 
   assumptions.unshift(`Based on ${rules.label} UK rates`)
+  // Orbit has no network and will not guess at rates it has not been given.
+  // If somebody asks for a tax year that is not in the table, say so plainly
+  // rather than quietly answering a different question.
+  if (input.taxYear && !TAX_YEARS[input.taxYear]) {
+    assumptions.push(
+      `Rates for ${input.taxYear} are not built in, so ${rules.label} rates were used instead. ` +
+        'Orbit never fetches rates, so a new tax year has to be added to the application.'
+    )
+  }
   assumptions.push('An estimate. Your payslip is the authority, not this figure.')
   if (input.pensionType === 'salary-sacrifice') {
     assumptions.push('Salary sacrifice assumed to reduce both taxable pay and National Insurance')

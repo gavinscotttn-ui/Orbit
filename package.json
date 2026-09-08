@@ -1,7 +1,7 @@
 {
   "name": "orbit",
   "version": "0.1.0",
-  "description": "Orbit — Life orbits around it. A private, offline-first personal life management desktop application.",
+  "description": "Orbit \u2014 Life orbits around it. A private, offline-first personal life management desktop application.",
   "author": {
     "name": "Orbit"
   },
@@ -15,11 +15,15 @@
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "eslint . --ext .ts,.tsx",
     "pack:dir": "npm run build && electron-builder --dir",
     "dist:mac": "npm run build && electron-builder --mac",
     "dist:win": "npm run build && electron-builder --win",
-    "dist:all": "npm run build && electron-builder --mac --win"
+    "dist:all": "npm run build && electron-builder --mac --win",
+    "dist:mac:arm64": "npm run build && electron-builder --mac --arm64",
+    "dist:mac:x64": "npm run build && electron-builder --mac --x64",
+    "dist:win:portable": "npm run build && electron-builder --win portable",
+    "test:e2e": "npm run build && node tests/e2e/smoke.mjs",
+    "verify": "npm run typecheck && npm run test && npm run build"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",

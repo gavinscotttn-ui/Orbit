@@ -6,6 +6,7 @@ import { requireEntity } from '@shared/contracts/entities/index.js'
 import { parseAmount } from '@shared/domain/money.js'
 import { addDays, isCalendarDate, today as todayDate } from '@shared/domain/time.js'
 import { newId, safeFileName } from '@shared/domain/ids.js'
+import { parseCsv, toCsv } from '@shared/domain/csv.js'
 import type { AppContext } from '../../context.js'
 import { broadcast, CalendarDateSchema, Empty, EntityType, FsPath, handle, RecordId } from '../router.js'
 import { LIFE_EVENT_TEMPLATES, applyLifeEventTemplate, previewLifeEventTemplate } from '../../services/life-events.js'
@@ -472,55 +473,6 @@ function suggestFromFilename(filename: string): Suggestion[] {
   return suggestFromText(filename.replace(/[_-]/g, ' '))
 }
 
-// -- CSV -------------------------------------------------------------------
-
-/** A small, correct CSV reader: quoted fields, embedded commas and newlines. */
-export function parseCsv(text: string): { headers: string[]; rows: string[][] } {
-  const rows: string[][] = []
-  let row: string[] = []
-  let field = ''
-  let inQuotes = false
-  const source = String(text ?? '').replace(/^﻿/, '')
-
-  for (let i = 0; i < source.length; i++) {
-    const char = source[i] as string
-    if (inQuotes) {
-      if (char === '"') {
-        if (source[i + 1] === '"') {
-          field += '"'
-          i += 1
-        } else {
-          inQuotes = false
-        }
-      } else {
-        field += char
-      }
-      continue
-    }
-    if (char === '"') {
-      inQuotes = true
-    } else if (char === ',') {
-      row.push(field)
-      field = ''
-    } else if (char === '\n') {
-      row.push(field)
-      rows.push(row)
-      row = []
-      field = ''
-    } else if (char !== '\r') {
-      field += char
-    }
-  }
-  if (field !== '' || row.length > 0) {
-    row.push(field)
-    rows.push(row)
-  }
-
-  const nonEmpty = rows.filter((r) => r.some((cell) => cell.trim() !== ''))
-  const headers = (nonEmpty.shift() ?? []).map((h) => h.trim())
-  return { headers, rows: nonEmpty }
-}
-
 function guessMapping(headers: string[]): Record<string, number> {
   const mapping: Record<string, number> = {}
   const find = (patterns: RegExp[]): number | undefined => {
@@ -575,18 +527,6 @@ export function normaliseDate(input: string): string | null {
     }
   }
   return null
-}
-
-function toCsv(rows: Record<string, unknown>[]): string {
-  if (rows.length === 0) return ''
-  const headers = Object.keys(rows[0] as Record<string, unknown>)
-  const escape = (value: unknown): string => {
-    const text = value === null || value === undefined ? '' : String(value)
-    return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text
-  }
-  const lines = [headers.join(',')]
-  for (const row of rows) lines.push(headers.map((h) => escape(row[h])).join(','))
-  return lines.join('\n') + '\n'
 }
 
 function safeJsonArray(text: string): unknown[] {

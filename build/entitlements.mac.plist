@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!--
+    The hardened runtime needs these two for Electron to run at all: Chromium's
+    JavaScript engine allocates executable memory, and the framework is loaded
+    from inside the bundle.
+  -->
+  <key>com.apple.security.cs.allow-jit</key>
+  <true/>
+  <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+  <true/>
+  <key>com.apple.security.cs.disable-library-validation</key>
+  <true/>
+
+  <!--
+    Orbit reads and writes a vault folder the user picks with a native dialog.
+    Under the App Sandbox that needs the user-selected read-write entitlement.
+    Note that Orbit is NOT distributed through the App Store and does not enable
+    the sandbox; this is here so the entitlement set is complete if it ever is.
+  -->
+  <key>com.apple.security.files.user-selected.read-write</key>
+  <true/>
+
+  <!--
+    Deliberately absent, and each absence is a decision:
+      com.apple.security.network.client  — Orbit makes no network requests.
+      com.apple.security.network.server  — Orbit listens on nothing.
+      com.apple.security.device.camera   — never used.
+      com.apple.security.device.microphone — never used.
+      com.apple.security.personal-information.* — never used.
+  -->
+</dict>
+</plist>

@@ -270,6 +270,47 @@ export function AppProvider({ children }: { children: ReactNode }): ReactNode {
     return () => systemDark?.removeEventListener?.('change', apply)
   }, [settings?.theme, settings?.density, settings?.lowClutter, device?.themeOverride, device?.reduceMotion, device?.textScale])
 
+  /**
+   * Automatic locking.
+   *
+   * Orbit has no passphrase, so locking means closing the vault: the database
+   * is closed, the lock file released, and the first-run screen comes back.
+   * Nothing from the vault is left on screen. This is a per-device preference
+   * because "this laptop lives in an office" is a fact about the laptop.
+   */
+  useEffect(() => {
+    const minutes = device?.autoLockMinutes ?? 0
+    if (!vault?.open || minutes <= 0) return
+    let timer: number | null = null
+
+    const lock = (): void => {
+      void (async () => {
+        const result = await call('vault.close', {})
+        if (!result.ok) return
+        await refreshVault()
+        toast({
+          tone: 'info',
+          title: 'Locked',
+          detail: `Orbit closed your vault after ${minutes} minute${minutes === 1 ? '' : 's'} without any activity.`
+        })
+      })()
+    }
+
+    const reset = (): void => {
+      if (timer) window.clearTimeout(timer)
+      timer = window.setTimeout(lock, minutes * 60_000)
+    }
+
+    const events = ['pointerdown', 'keydown', 'wheel', 'focus'] as const
+    for (const name of events) window.addEventListener(name, reset, { passive: true })
+    reset()
+
+    return () => {
+      if (timer) window.clearTimeout(timer)
+      for (const name of events) window.removeEventListener(name, reset)
+    }
+  }, [vault?.open, device?.autoLockMinutes, refreshVault, toast])
+
   const format = useMemo<FormatContext>(
     () =>
       settings

@@ -613,6 +613,25 @@ function PreferencesSection(): ReactNode {
               </select>
             </div>
             <div className="field">
+              <label htmlFor="dev-lock">Lock the vault after</label>
+              <select
+                id="dev-lock"
+                value={String(device.autoLockMinutes)}
+                onChange={(event) => void setDevice({ autoLockMinutes: Number(event.target.value) })}
+              >
+                <option value="0">Never</option>
+                <option value="5">5 minutes of inactivity</option>
+                <option value="15">15 minutes of inactivity</option>
+                <option value="30">30 minutes of inactivity</option>
+                <option value="60">1 hour of inactivity</option>
+                <option value="240">4 hours of inactivity</option>
+              </select>
+              <p className="help">
+                Locking closes the vault and returns you to the opening screen. There is no passphrase to type — Orbit
+                does not have one — so this hides your records and releases the vault, it does not encrypt anything.
+              </p>
+            </div>
+            <div className="field">
               <label htmlFor="dev-scale">Text size</label>
               <select
                 id="dev-scale"
