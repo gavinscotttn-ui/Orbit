@@ -55,7 +55,7 @@ export const lifeEntities: EntityDescriptor[] = [
     titleField: 'title',
     dateField: 'next_due_on',
     searchFields: ['title', 'notes'],
-    defaultOrder: 'active DESC, COALESCE(next_due_on, "9999") ASC',
+    defaultOrder: "active DESC, COALESCE(next_due_on, '9999') ASC",
     emptyState: 'MOT, boiler service, gutter clearing, alarm testing — anything that comes round again.',
     fields: [
       f.text('title', 'What', { required: true, span: 2, inList: true }),
@@ -171,7 +171,7 @@ export const lifeEntities: EntityDescriptor[] = [
     titleField: 'location',
     dateField: 'expires_at',
     searchFields: ['location', 'reference', 'note'],
-    defaultOrder: 'COALESCE(expires_at, "9999") ASC',
+    defaultOrder: "COALESCE(expires_at, '9999') ASC",
     fields: [
       f.select('kind', 'Type', [
         { value: 'where-i-parked', label: 'Where I parked' },
@@ -278,7 +278,7 @@ export const lifeEntities: EntityDescriptor[] = [
     titleField: 'name',
     dateField: 'next_due_on',
     searchFields: ['name', 'spec', 'supplier'],
-    defaultOrder: 'active DESC, COALESCE(next_due_on, "9999") ASC',
+    defaultOrder: "active DESC, COALESCE(next_due_on, '9999') ASC",
     emptyState: 'Filters, batteries, bulbs, water softener salt — the things you only remember when they run out.',
     fields: [
       f.text('name', 'What', { required: true, span: 2, inList: true }),
@@ -303,7 +303,7 @@ export const lifeEntities: EntityDescriptor[] = [
     titleField: 'item_name',
     dateField: 'due_back_on',
     searchFields: ['item_name', 'note'],
-    defaultOrder: 'CASE WHEN returned_on IS NULL THEN 0 ELSE 1 END, COALESCE(due_back_on, "9999") ASC',
+    defaultOrder: "CASE WHEN returned_on IS NULL THEN 0 ELSE 1 END, COALESCE(due_back_on, '9999') ASC",
     emptyState: 'Who has your drill, and whose ladder is in your garage.',
     fields: [
       f.text('item_name', 'What', { required: true, span: 2, inList: true }),
@@ -348,7 +348,7 @@ export const lifeEntities: EntityDescriptor[] = [
     titleField: 'name',
     dateField: 'on_date',
     searchFields: ['name', 'destination', 'note'],
-    defaultOrder: 'CASE status WHEN "gone" THEN 1 ELSE 0 END, created_at DESC',
+    defaultOrder: "CASE status WHEN 'gone' THEN 1 ELSE 0 END, created_at DESC",
     fields: [
       f.text('name', 'Item', { required: true, span: 2, inList: true }),
       f.select('action', 'Plan', ['donate', 'sell', 'recycle', 'bin', 'gift', 'keep'], { inList: true, defaultValue: 'donate' }),
@@ -399,7 +399,7 @@ export const lifeEntities: EntityDescriptor[] = [
     titleField: 'item_name',
     dateField: 'deadline_on',
     searchFields: ['item_name', 'reason', 'reference', 'notes'],
-    defaultOrder: 'CASE status WHEN "refunded" THEN 1 ELSE 0 END, COALESCE(deadline_on, "9999") ASC',
+    defaultOrder: "CASE status WHEN 'refunded' THEN 1 ELSE 0 END, COALESCE(deadline_on, '9999') ASC",
     emptyState: 'Track a return all the way to the money actually landing back in your account.',
     fields: [
       f.text('item_name', 'Item', { required: true, span: 2, inList: true }),
@@ -439,7 +439,7 @@ export const lifeEntities: EntityDescriptor[] = [
     titleField: 'description',
     dateField: 'expected_on',
     searchFields: ['description', 'carrier', 'tracking_number', 'notes'],
-    defaultOrder: 'CASE status WHEN "delivered" THEN 1 WHEN "collected" THEN 1 ELSE 0 END, COALESCE(expected_on, "9999") ASC',
+    defaultOrder: "CASE status WHEN 'delivered' THEN 1 WHEN 'collected' THEN 1 ELSE 0 END, COALESCE(expected_on, '9999') ASC",
     emptyState: 'Track parcels by hand. Orbit has no carrier integration and will not pretend otherwise.',
     fields: [
       f.text('description', 'What', { required: true, span: 2, inList: true }),
@@ -690,7 +690,7 @@ export const lifeEntities: EntityDescriptor[] = [
     titleField: 'title',
     dateField: 'on_date',
     searchFields: ['title', 'school', 'notes'],
-    defaultOrder: 'COALESCE(on_date, due_by, "9999") ASC',
+    defaultOrder: "COALESCE(on_date, due_by, '9999') ASC",
     emptyState: 'Term dates, trips, permission slips and the payments that come with them.',
     fields: [
       f.text('title', 'What', { required: true, span: 2, inList: true }),
@@ -789,7 +789,7 @@ export const lifeEntities: EntityDescriptor[] = [
     titleField: 'name',
     dateField: 'expires_on',
     searchFields: ['name', 'note'],
-    defaultOrder: 'COALESCE(expires_on, "9999") ASC',
+    defaultOrder: "COALESCE(expires_on, '9999') ASC",
     emptyState: 'What is in the freezer, and what is about to go off.',
     fields: [
       f.text('name', 'Item', { required: true, span: 2, inList: true }),
@@ -879,7 +879,7 @@ export const lifeEntities: EntityDescriptor[] = [
     titleField: 'title',
     dateField: 'starts_on',
     searchFields: ['title', 'destination', 'country', 'notes'],
-    defaultOrder: 'COALESCE(starts_on, "9999") ASC',
+    defaultOrder: "COALESCE(starts_on, '9999') ASC",
     emptyState: 'Bookings, budget, packing list and preparation tasks, all in one place.',
     costRollup: [{ table: 'transactions', foreignKey: 'trip_id', amountColumn: 'amount_minor', currencyColumn: 'currency', dateColumn: 'date' }],
     fields: [
@@ -911,7 +911,7 @@ export const lifeEntities: EntityDescriptor[] = [
     titleField: 'title',
     dateField: 'starts_on',
     searchFields: ['title', 'reference', 'provider', 'from_place', 'to_place', 'notes'],
-    defaultOrder: 'COALESCE(starts_on, "9999") ASC',
+    defaultOrder: "COALESCE(starts_on, '9999') ASC",
     fields: [
       f.text('title', 'What', { required: true, span: 2, inList: true }),
       f.ref('trip_id', 'Trip', 'trip', { required: true, inList: true }),
@@ -964,7 +964,7 @@ export const lifeEntities: EntityDescriptor[] = [
     titleField: 'provider',
     dateField: 'expires_on',
     searchFields: ['provider', 'reference', 'notes'],
-    defaultOrder: 'COALESCE(expires_on, "9999") ASC',
+    defaultOrder: "COALESCE(expires_on, '9999') ASC",
     emptyState: 'Airline and hotel credits from cancelled trips, which expire quietly if nobody watches them.',
     fields: [
       f.text('provider', 'Provider', { required: true, span: 2, inList: true }),
@@ -1043,7 +1043,7 @@ export const lifeEntities: EntityDescriptor[] = [
     titleField: 'title',
     dateField: 'expires_on',
     searchFields: ['title', 'awarding_body', 'reference', 'notes'],
-    defaultOrder: 'COALESCE(expires_on, "9999") ASC',
+    defaultOrder: "COALESCE(expires_on, '9999') ASC",
     emptyState: 'Certificates, licences and memberships, with the renewal dates that catch people out.',
     fields: [
       f.text('title', 'Qualification', { required: true, span: 2, inList: true }),
@@ -1072,7 +1072,7 @@ export const lifeEntities: EntityDescriptor[] = [
     titleField: 'title',
     dateField: 'target_end_on',
     searchFields: ['title', 'provider', 'notes'],
-    defaultOrder: 'COALESCE(completed_on, "0000") ASC, COALESCE(target_end_on, "9999") ASC',
+    defaultOrder: "COALESCE(completed_on, '0000') ASC, COALESCE(target_end_on, '9999') ASC",
     fields: [
       f.text('title', 'Course', { required: true, span: 2, inList: true }),
       f.text('provider', 'Provider', { inList: true }),
@@ -1094,7 +1094,7 @@ export const lifeEntities: EntityDescriptor[] = [
     titleField: 'role',
     dateField: 'next_action_on',
     searchFields: ['role', 'company', 'notes', 'next_action'],
-    defaultOrder: 'COALESCE(next_action_on, "9999") ASC',
+    defaultOrder: "COALESCE(next_action_on, '9999') ASC",
     fields: [
       f.text('role', 'Role', { required: true, span: 2, inList: true }),
       f.text('company', 'Company', { inList: true }),
@@ -1150,7 +1150,7 @@ export const lifeEntities: EntityDescriptor[] = [
     icon: 'gift',
     titleField: 'title',
     searchFields: ['title', 'notes'],
-    defaultOrder: 'CASE status WHEN "given" THEN 1 ELSE 0 END, created_at DESC',
+    defaultOrder: "CASE status WHEN 'given' THEN 1 ELSE 0 END, created_at DESC",
     emptyState: 'Write it down the moment they mention it, not in December.',
     fields: [
       f.text('title', 'Idea', { required: true, span: 2, inList: true }),
@@ -1191,7 +1191,7 @@ export const lifeEntities: EntityDescriptor[] = [
     icon: 'mountain',
     titleField: 'title',
     searchFields: ['title', 'category', 'notes'],
-    defaultOrder: 'CASE status WHEN "done" THEN 1 ELSE 0 END, target_year ASC',
+    defaultOrder: "CASE status WHEN 'done' THEN 1 ELSE 0 END, target_year ASC",
     fields: [
       f.text('title', 'What', { required: true, span: 2, inList: true }),
       f.text('category', 'Category', { inList: true }),
@@ -1211,7 +1211,7 @@ export const lifeEntities: EntityDescriptor[] = [
     icon: 'book',
     titleField: 'title',
     searchFields: ['title', 'author', 'notes'],
-    defaultOrder: 'CASE status WHEN "reading" THEN 0 WHEN "want" THEN 1 ELSE 2 END, title COLLATE NOCASE ASC',
+    defaultOrder: "CASE status WHEN 'reading' THEN 0 WHEN 'want' THEN 1 ELSE 2 END, title COLLATE NOCASE ASC",
     fields: [
       f.text('title', 'Title', { required: true, span: 2, inList: true }),
       f.text('author', 'Author', { inList: true }),
@@ -1328,7 +1328,7 @@ export const lifeEntities: EntityDescriptor[] = [
     titleField: 'name',
     dateField: 'expires_on',
     searchFields: ['name', 'registrar', 'notes'],
-    defaultOrder: 'COALESCE(expires_on, "9999") ASC',
+    defaultOrder: "COALESCE(expires_on, '9999') ASC",
     fields: [
       f.text('name', 'Domain', { required: true, span: 2, inList: true }),
       f.text('registrar', 'Registrar', { inList: true }),

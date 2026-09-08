@@ -221,7 +221,7 @@ export function registerVaultHandlers(ctx: AppContext): void {
       const payload = openResultToPayload(created)
       try {
         const services = ctx.require()
-        seedDemoVault(services.repository, services.settings, services.attachments)
+        seedDemoVault(services.repository, services.settings, services.attachments, services.session.db)
         services.search.rebuild()
       } catch (err) {
         log.error('vault', 'could not fill the demonstration vault', err)

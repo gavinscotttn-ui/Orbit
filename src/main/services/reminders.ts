@@ -1,5 +1,6 @@
 import { addDays, today as todayDate, daysBetween, type CalendarDate } from '@shared/domain/time.js'
 import { normaliseRule, nextOccurrence } from '@shared/domain/recurrence.js'
+import { billOccurrences } from '@shared/domain/finance.js'
 import type { OrbitDatabase } from '../db/database.js'
 import type { Repository } from '../db/repository.js'
 import type { SettingsService } from './settings.js'
@@ -89,7 +90,9 @@ export class RemindersService {
       if (row.date > limit) return
       const daysAway = daysBetween(now, row.date)
       items.push({
-        id: `${config.entityType}:${row.id}`,
+        // The date is part of the key because one record can be due more than
+        // once inside the window — a monthly bill, for instance.
+        id: `${config.entityType}:${row.id}:${row.date}`,
         severity: severityFor(daysAway, config.soonDays),
         daysAway,
         date: row.date,
@@ -114,16 +117,75 @@ export class RemindersService {
     }
 
     // --- Bills and subscriptions ---------------------------------------------
-    safely('bill payments', () => {
-      const rows = this.db.all<SourceRow & { bill_name: string }>(
-        `SELECT p.id, b.name AS title, p.due_date AS date, p.amount_minor, p.currency, b.name AS bill_name
-           FROM bill_payments p JOIN bills b ON b.id = p.bill_id
-          WHERE p.status = 'due' AND p.due_date <= ?
-          ORDER BY p.due_date`,
-        [limit]
+    /*
+     * Bills that are due are DERIVED from each bill's own schedule, not read
+     * from a payments table. A bill_payments row only exists once a payment has
+     * been recorded, so reading from it would mean a bill never appeared until
+     * after it had been paid — precisely backwards.
+     */
+    safely('bills due', () => {
+      const bills = this.db.all<{
+        id: string
+        name: string
+        amount_minor: number
+        currency: string
+        cadence: string
+        anchor_date: string
+        due_day: number | null
+        status: string
+        created_at: string
+      }>(
+        `SELECT id, name, amount_minor, currency, cadence, anchor_date, due_day, status, created_at
+           FROM bills WHERE status = 'active'`
       )
-      for (const row of rows) {
-        push(row, { entityType: 'bill_payment', module: '', soonDays: 7, action: 'Pay', detail: 'Bill due' })
+      if (bills.length === 0) return
+
+      const paid = new Set(
+        this.db
+          .all<{ bill_id: string; period_key: string }>(
+            "SELECT bill_id, period_key FROM bill_payments WHERE status IN ('paid','skipped')"
+          )
+          .map((row) => `${row.bill_id}:${row.period_key}`)
+      )
+
+      // Look back a little as well as forward, so a bill missed last week is
+      // still shown as overdue rather than quietly disappearing.
+      const from = addDays(now, -60)
+      for (const bill of bills) {
+        const occurrences = billOccurrences(
+          {
+            id: bill.id,
+            name: bill.name,
+            amountMinor: bill.amount_minor,
+            currency: bill.currency,
+            cadence: bill.cadence,
+            anchorDate: bill.anchor_date,
+            dueDay: bill.due_day,
+            status: bill.status
+          },
+          from,
+          limit
+        )
+        // A bill added today cannot have been missed last August. Only periods
+        // that fell due after the record existed are Orbit's business.
+        const recordedFrom = String(bill.created_at ?? '').slice(0, 10)
+        for (const occurrence of occurrences) {
+          if (paid.has(`${bill.id}:${occurrence.periodKey}`)) continue
+          if (recordedFrom && occurrence.dueDate < recordedFrom) continue
+          // Only complain about the recent past, not every month since the
+          // bill was first set up.
+          if (occurrence.dueDate < now && daysBetween(occurrence.dueDate, now) > 45) continue
+          push(
+            {
+              id: bill.id,
+              title: bill.name,
+              date: occurrence.dueDate,
+              amount_minor: occurrence.amountMinor,
+              currency: occurrence.currency
+            },
+            { entityType: 'bill', module: '', soonDays: 7, action: 'Pay', detail: 'Bill due' }
+          )
+        }
       }
     })
 

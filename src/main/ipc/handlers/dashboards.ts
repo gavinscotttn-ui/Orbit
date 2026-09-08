@@ -124,10 +124,11 @@ export function registerDashboardHandlers(ctx: AppContext): void {
 
       const habits = session.db.all<Record<string, unknown>>(
         `SELECT h.id, h.title, h.colour, h.cadence,
+                (SELECT c.id FROM habit_checkins c WHERE c.habit_id = h.id AND c.on_date = ?) AS checkin_id,
                 (SELECT COUNT(*) FROM habit_checkins c WHERE c.habit_id = h.id AND c.on_date = ?) AS done_today,
                 (SELECT COUNT(*) FROM habit_checkins c WHERE c.habit_id = h.id AND c.on_date >= ?) AS done_this_week
            FROM habits h WHERE h.active = 1 ORDER BY h.title COLLATE NOCASE`,
-        [now, startOfWeek(now, prefs.weekStartsOn)]
+        [now, now, startOfWeek(now, prefs.weekStartsOn)]
       )
 
       const pinnedNotes = repository.list('note', { where: { pinned: 1 }, limit: 8 }).rows

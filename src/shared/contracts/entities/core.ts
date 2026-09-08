@@ -67,7 +67,7 @@ export const coreEntities: EntityDescriptor[] = [
     titleField: 'title',
     dateField: 'expires_on',
     searchFields: ['title', 'reference', 'notes', 'doc_type'],
-    defaultOrder: 'COALESCE(expires_on, "9999") ASC, title COLLATE NOCASE ASC',
+    defaultOrder: "COALESCE(expires_on, '9999') ASC, title COLLATE NOCASE ASC",
     emptyState: 'Passports, policies, certificates, manuals, statements — anything worth keeping and finding again.',
     fields: [
       f.text('title', 'Title', { required: true, span: 2, inList: true }),
@@ -97,7 +97,7 @@ export const coreEntities: EntityDescriptor[] = [
     titleField: 'name',
     dateField: 'ends_on',
     searchFields: ['name', 'policy_number', 'cover_summary', 'notes'],
-    defaultOrder: 'COALESCE(ends_on, "9999") ASC',
+    defaultOrder: "COALESCE(ends_on, '9999') ASC",
     emptyState: 'Home, car, travel, pet, gadget — every policy with its dates, excess and paperwork.',
     costRollup: [{ table: 'claims', foreignKey: 'policy_id', amountColumn: 'amount_settled_minor', currencyColumn: 'currency', dateColumn: 'opened_on' }],
     fields: [

@@ -50,6 +50,8 @@ export interface WriteOptions {
   /** Suppress the activity entry, for bulk seeding. */
   silent?: boolean
   summary?: string
+  /** Currency to use when a money-bearing record does not name one. */
+  defaultCurrency?: string
 }
 
 const ALWAYS_ALLOWED = new Set(['module'])
@@ -77,10 +79,22 @@ export class Repository {
     const errors: { field: string; message: string }[] = []
     const byName = new Map(entity.fields.map((f) => [f.name, f]))
 
+    // A money field names the column holding its currency. That column is
+    // usually NOT NULL in the schema but is not itself a declared field, so it
+    // has to be allowed through explicitly — otherwise an amount could be
+    // written with no currency, which is not an amount at all.
+    const currencyColumns = new Set(
+      entity.fields.filter((f) => f.type === 'money' && f.currencyField).map((f) => f.currencyField as string)
+    )
+
     for (const [key, raw] of Object.entries(input)) {
       const spec = byName.get(key)
       if (!spec) {
-        if (ALWAYS_ALLOWED.has(key)) values[key] = raw == null ? '' : String(raw)
+        if (currencyColumns.has(key)) {
+          values[key] = String(raw ?? '').toUpperCase().slice(0, 8)
+        } else if (ALWAYS_ALLOWED.has(key)) {
+          values[key] = raw == null ? '' : String(raw)
+        }
         // Anything else is dropped in silence: a renamed column in an old
         // client must not be able to write a field this build knows nothing of.
         continue
@@ -307,6 +321,15 @@ export class Repository {
     const entity = requireEntity(type)
     const { values, errors } = this.coerce(entity, input, 'create')
     if (errors.length) return { ok: false, errors }
+
+    // Fill in a currency for any money column left blank, so a record can never
+    // carry an amount with no currency attached to it.
+    for (const field of entity.fields) {
+      if (field.type !== 'money' || !field.currencyField) continue
+      const column = field.currencyField
+      if (!this.hasColumn(entity.table, column)) continue
+      if (!values[column]) values[column] = (options.defaultCurrency ?? 'GBP').toUpperCase().slice(0, 8)
+    }
 
     const id = typeof input.id === 'string' && input.id ? input.id : newId()
     const now = new Date().toISOString()

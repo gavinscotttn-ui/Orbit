@@ -59,8 +59,8 @@ export function registerRecordHandlers(ctx: AppContext): void {
   })
 
   handle('records.create', z.object({ type: EntityType, data: RecordData }), ({ type, data }) => {
-    const { repository } = ctx.require()
-    const result = repository.create(type, data)
+    const { repository, settings } = ctx.require()
+    const result = repository.create(type, data, { defaultCurrency: settings.all().currency })
     if (!result.ok) return { created: false as const, errors: result.errors }
     broadcast('records.changed', { type, id: result.id, action: 'created' })
     return { created: true as const, id: result.id, row: result.row }

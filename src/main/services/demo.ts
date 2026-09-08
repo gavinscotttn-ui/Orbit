@@ -1,7 +1,10 @@
 import { addDays, addMonthsClamped, monthKey, startOfMonth, today as todayDate } from '@shared/domain/time.js'
 import type { Repository } from '../db/repository.js'
+import type { OrbitDatabase } from '../db/database.js'
 import type { SettingsService } from './settings.js'
 import type { AttachmentService } from './attachments.js'
+import { billOccurrences } from '@shared/domain/finance.js'
+import { newId } from '@shared/domain/ids.js'
 import { log } from '../log.js'
 
 /**
@@ -32,7 +35,8 @@ export interface DemoResult {
 export function seedDemoVault(
   repository: Repository,
   settings: SettingsService,
-  attachments: AttachmentService
+  attachments: AttachmentService,
+  db: OrbitDatabase
 ): DemoResult {
   const now = todayDate()
   const created: Record<string, number> = {}
@@ -840,6 +844,62 @@ export function seedDemoVault(
   }).rows[0]
   if (serviceTx && car) {
     repository.update('transaction', serviceTx.id, { asset_id: car } as Record<string, unknown>, { silent: true })
+  }
+
+  // Mark past bill periods as paid. Without this the demonstration would show
+  // every bill as overdue since the day it was set up, which is both wrong and
+  // a poor advertisement for a product about staying on top of things.
+  try {
+    const bills = db.all<{
+      id: string
+      name: string
+      amount_minor: number
+      currency: string
+      cadence: string
+      anchor_date: string
+      due_day: number | null
+      status: string
+    }>('SELECT id, name, amount_minor, currency, cadence, anchor_date, due_day, status FROM bills')
+    const stamp = new Date().toISOString()
+    let paidCount = 0
+    for (const bill of bills) {
+      const occurrences = billOccurrences(
+        {
+          id: bill.id,
+          name: bill.name,
+          amountMinor: bill.amount_minor,
+          currency: bill.currency,
+          cadence: bill.cadence,
+          anchorDate: bill.anchor_date,
+          dueDay: bill.due_day,
+          status: bill.status
+        },
+        addMonthsClamped(now, -9, 1),
+        addDays(now, -1)
+      )
+      for (const occurrence of occurrences) {
+        db.run(
+          `INSERT OR IGNORE INTO bill_payments
+             (id, bill_id, period_key, due_date, amount_minor, currency, paid_on, transaction_id, status, note, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, NULL, 'paid', '', ?, ?)`,
+          [
+            newId('bp'),
+            bill.id,
+            occurrence.periodKey,
+            occurrence.dueDate,
+            occurrence.amountMinor,
+            occurrence.currency,
+            occurrence.dueDate,
+            stamp,
+            stamp
+          ]
+        )
+        paidCount += 1
+      }
+    }
+    created.bill_payment = paidCount
+  } catch (err) {
+    log.warn('demo', 'could not record past bill payments', err)
   }
 
   return {

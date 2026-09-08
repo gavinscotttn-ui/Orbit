@@ -112,7 +112,7 @@ export const moneyEntities: EntityDescriptor[] = [
     titleField: 'name',
     dateField: 'renewal_date',
     searchFields: ['name', 'notes', 'cancellation_reference'],
-    defaultOrder: 'CASE status WHEN "active" THEN 0 ELSE 1 END, name COLLATE NOCASE ASC',
+    defaultOrder: "CASE status WHEN 'active' THEN 0 ELSE 1 END, name COLLATE NOCASE ASC",
     emptyState: 'Bills, subscriptions, memberships and contracts — with their renewal and notice dates.',
     costRollup: [{ table: 'transactions', foreignKey: 'bill_id', amountColumn: 'amount_minor', currencyColumn: 'currency', dateColumn: 'date' }],
     fields: [
@@ -162,7 +162,7 @@ export const moneyEntities: EntityDescriptor[] = [
     titleField: 'reason',
     dateField: 'due_date',
     searchFields: ['reason', 'notes'],
-    defaultOrder: 'CASE status WHEN "open" THEN 0 ELSE 1 END, COALESCE(due_date, "9999") ASC',
+    defaultOrder: "CASE status WHEN 'open' THEN 0 ELSE 1 END, COALESCE(due_date, '9999') ASC",
     emptyState: 'Money you have lent to people, and money you owe them.',
     fields: [
       f.text('reason', 'What it was for', { span: 2, inList: true }),
@@ -247,7 +247,7 @@ export const moneyEntities: EntityDescriptor[] = [
     titleField: 'name',
     dateField: 'target_date',
     searchFields: ['name', 'notes'],
-    defaultOrder: 'COALESCE(target_date, "9999") ASC, name COLLATE NOCASE ASC',
+    defaultOrder: "COALESCE(target_date, '9999') ASC, name COLLATE NOCASE ASC",
     emptyState: 'Pots, goals and sinking funds for the big annual bills that always arrive at a bad moment.',
     fields: [
       f.text('name', 'Name', { required: true, span: 2, inList: true }),
@@ -311,7 +311,7 @@ export const moneyEntities: EntityDescriptor[] = [
     titleField: 'title',
     dateField: 'expected_by',
     searchFields: ['title', 'reference', 'notes'],
-    defaultOrder: 'CASE status WHEN "received" THEN 1 ELSE 0 END, COALESCE(expected_by, "9999") ASC',
+    defaultOrder: "CASE status WHEN 'received' THEN 1 ELSE 0 END, COALESCE(expected_by, '9999') ASC",
     emptyState: 'Work expenses, reimbursements, refunds and shared costs you are still waiting on.',
     fields: [
       f.text('title', 'What for', { required: true, span: 2, inList: true }),
@@ -381,7 +381,7 @@ export const moneyEntities: EntityDescriptor[] = [
     titleField: 'label',
     dateField: 'expires_on',
     searchFields: ['label', 'issuer', 'notes'],
-    defaultOrder: 'COALESCE(expires_on, "9999") ASC',
+    defaultOrder: "COALESCE(expires_on, '9999') ASC",
     emptyState: 'Gift cards, vouchers and loyalty points, so none of them quietly expire.',
     fields: [
       f.text('label', 'What', { required: true, span: 2, inList: true }),

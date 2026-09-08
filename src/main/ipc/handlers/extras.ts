@@ -382,7 +382,7 @@ export function registerExtraHandlers(ctx: AppContext): void {
       // in somebody's real vault.
       throw new Error('Demonstration data can only be added to a demonstration vault.')
     }
-    const result = seedDemoVault(repository, settings, attachments)
+    const result = seedDemoVault(repository, settings, attachments, session.db)
     search.rebuild()
     broadcast('records.changed', { type: '', id: '', action: 'imported' })
     return result

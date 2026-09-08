@@ -1,0 +1,132 @@
+/*
+ * Orbit's design tokens.
+ *
+ * The layout — a dark fixed sidebar, a sticky top bar, a centred content
+ * column with generous cards — follows the Amethyst Money prototype, because
+ * it reads well and gets a lot of information onto a screen without shouting.
+ * The palette is Orbit's own: a deep navy sidebar and a silver-blue accent
+ * taken from the mark, rather than Amethyst's violet.
+ *
+ * Both themes are first-class. Dark is not a filter over light; every token is
+ * defined twice, deliberately.
+ */
+
+:root {
+  /* Brand */
+  --navy-900: #0b1220;
+  --navy-800: #121a2b;
+  --navy-700: #172034;
+  --accent: #3d6fd0;
+  --accent-strong: #2b56ab;
+  --accent-soft: #e8effc;
+  --accent-ink: #ffffff;
+  --silver: #c6d3e8;
+
+  /* Surfaces */
+  --bg: #f3f5f9;
+  --panel: #ffffff;
+  --panel-2: #fafbfd;
+  --panel-raised: #ffffff;
+  --line: #e2e7ef;
+  --line-strong: #cdd5e2;
+
+  /* Text */
+  --ink: #14181f;
+  --ink-2: #3c4453;
+  --muted: #6b7688;
+  --muted-2: #8d97a8;
+
+  /* Meaning */
+  --good: #1f8a5a;
+  --good-soft: #e4f5ec;
+  --warn: #b26a06;
+  --warn-soft: #fdf1de;
+  --bad: #c0392f;
+  --bad-soft: #fdeceb;
+  --info: #2b6cb0;
+  --info-soft: #e8f1fb;
+
+  /* Shape */
+  --radius-s: 7px;
+  --radius: 11px;
+  --radius-l: 16px;
+  --shadow-1: 0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.06);
+  --shadow-2: 0 4px 12px rgba(16, 24, 40, 0.07), 0 12px 32px rgba(16, 24, 40, 0.06);
+  --shadow-pop: 0 18px 48px rgba(11, 18, 32, 0.18);
+
+  /* Rhythm */
+  --sidebar-w: 244px;
+  --topbar-h: 62px;
+  --content-max: 1420px;
+  --gap: 16px;
+
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI Variable Text", "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", "Cascadia Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+  /* Tabular figures keep money columns from dancing about as values change. */
+  --num: "tnum" 1, "lnum" 1;
+
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --navy-900: #05080f;
+  --navy-800: #0a0f1a;
+  --navy-700: #101725;
+  --accent: #6d9bef;
+  --accent-strong: #85adf5;
+  --accent-soft: #16233a;
+  --accent-ink: #06101f;
+  --silver: #9fb3d1;
+
+  --bg: #0d1017;
+  --panel: #151922;
+  --panel-2: #11151d;
+  --panel-raised: #1b2029;
+  --line: #242a36;
+  --line-strong: #333b4a;
+
+  --ink: #e9ecf3;
+  --ink-2: #c2c9d6;
+  --muted: #8e98a9;
+  --muted-2: #6f7889;
+
+  --good: #4bbd8a;
+  --good-soft: #10261d;
+  --warn: #e0a23c;
+  --warn-soft: #2a2011;
+  --bad: #ef6b60;
+  --bad-soft: #2c1615;
+  --info: #6d9bef;
+  --info-soft: #14203a;
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-pop: 0 24px 60px rgba(0, 0, 0, 0.6);
+
+  color-scheme: dark;
+}
+
+/* Comfortable is the default; compact tightens the vertical rhythm only. */
+:root[data-density='compact'] {
+  --gap: 11px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+:root[data-reduce-motion='true'] *,
+:root[data-reduce-motion='true'] *::before,
+:root[data-reduce-motion='true'] *::after {
+  animation-duration: 0.001ms !important;
+  transition-duration: 0.001ms !important;
+}

@@ -19,7 +19,7 @@ export const planEntities: EntityDescriptor[] = [
     titleField: 'title',
     dateField: 'due_date',
     searchFields: ['title', 'notes'],
-    defaultOrder: 'CASE status WHEN "done" THEN 1 WHEN "cancelled" THEN 1 ELSE 0 END ASC, COALESCE(due_date, "9999") ASC, priority DESC',
+    defaultOrder: "CASE status WHEN 'done' THEN 1 WHEN 'cancelled' THEN 1 ELSE 0 END ASC, COALESCE(due_date, '9999') ASC, priority DESC",
     emptyState: 'Nothing on your list. Add the thing you keep meaning to do.',
     fields: [
       f.text('title', 'Task', { required: true, span: 2, inList: true }),
@@ -81,7 +81,7 @@ export const planEntities: EntityDescriptor[] = [
     titleField: 'title',
     dateField: 'target_date',
     searchFields: ['title', 'description'],
-    defaultOrder: 'CASE status WHEN "active" THEN 0 WHEN "paused" THEN 1 WHEN "someday" THEN 2 ELSE 3 END, COALESCE(target_date, "9999") ASC',
+    defaultOrder: "CASE status WHEN 'active' THEN 0 WHEN 'paused' THEN 1 WHEN 'someday' THEN 2 ELSE 3 END, COALESCE(target_date, '9999') ASC",
     emptyState: 'A project is anything with more than one step. A goal is something you are working towards.',
     costRollup: [{ table: 'transactions', foreignKey: 'project_id', amountColumn: 'amount_minor', currencyColumn: 'currency', dateColumn: 'date' }],
     fields: [
@@ -120,7 +120,7 @@ export const planEntities: EntityDescriptor[] = [
     titleField: 'title',
     dateField: 'target_date',
     searchFields: ['title'],
-    defaultOrder: 'sort_order ASC, COALESCE(target_date, "9999") ASC',
+    defaultOrder: "sort_order ASC, COALESCE(target_date, '9999') ASC",
     fields: [
       f.text('title', 'Milestone', { required: true, span: 2, inList: true }),
       f.ref('project_id', 'Project', 'project', { required: true }),
@@ -137,7 +137,7 @@ export const planEntities: EntityDescriptor[] = [
     titleField: 'title',
     dateField: 'start_date',
     searchFields: ['title', 'description', 'location'],
-    defaultOrder: 'start_date ASC, COALESCE(start_time, "00:00") ASC',
+    defaultOrder: "start_date ASC, COALESCE(start_time, '00:00') ASC",
     emptyState: 'Appointments, all-day events, time blocks and deadlines.',
     fields: [
       f.text('title', 'Event', { required: true, span: 2, inList: true }),
@@ -182,6 +182,24 @@ export const planEntities: EntityDescriptor[] = [
       ], { defaultValue: 'in-app', help: 'Desktop notifications need permission on each computer.' }),
       f.select('state', 'State', ['scheduled', 'due', 'acknowledged', 'snoozed', 'cancelled'], { inList: true, defaultValue: 'scheduled' }),
       f.longtext('detail', 'Details')
+    ]
+  },
+  {
+    type: 'habit_checkin',
+    table: 'habit_checkins',
+    label: 'Check-in',
+    plural: 'Check-ins',
+    module: '',
+    icon: 'check',
+    titleField: 'note',
+    dateField: 'on_date',
+    searchFields: [],
+    defaultOrder: 'on_date DESC',
+    fields: [
+      f.ref('habit_id', 'Habit', 'habit', { required: true }),
+      f.date('on_date', 'Date', { required: true, inList: true }),
+      f.number('value', 'Times', { defaultValue: 1, min: 1, max: 50 }),
+      f.text('note', 'Note')
     ]
   },
   {

@@ -1,14 +1,13 @@
 {
   "name": "orbit",
   "version": "0.1.0",
-  "description": "Orbit \u2014 Life orbits around it. A private, offline-first personal life management desktop application.",
+  "description": "Orbit — Life orbits around it. A private, offline-first personal life management desktop application.",
   "author": {
     "name": "Orbit"
   },
   "license": "MIT",
   "private": true,
   "main": "./out/main/index.js",
-  "type": "module",
   "scripts": {
     "dev": "electron-vite dev",
     "start": "electron-vite preview",
@@ -22,7 +21,6 @@
     "dist:win": "npm run build && electron-builder --win",
     "dist:all": "npm run build && electron-builder --mac --win"
   },
-  "dependencies": {},
   "devDependencies": {
     "@types/node": "^22.15.0",
     "@types/react": "^19.2.0",
@@ -31,6 +29,7 @@
     "electron": "^44.2.0",
     "electron-builder": "^26.15.3",
     "electron-vite": "^5.0.0",
+    "playwright": "^1.63.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "typescript": "^5.9.3",
