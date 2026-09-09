@@ -116,21 +116,35 @@ a code-signing certificate and `CSC_LINK` / `CSC_KEY_PASSWORD`, or
 
 ---
 
-## 6. Application icons — not present
+## 6. Application icons
 
-`resources/` and `build/` contain no icon assets, so electron-builder falls back
-to the default Electron icon. Shipping a placeholder icon and calling it
-branding would be dishonest; adding the real one is a one-file change:
+`build/icon.svg` is the source of truth; `build/icon.png` (1024×1024) is
+generated from it:
 
-* `build/icon.icns` (macOS, 1024×1024 source)
-* `build/icon.ico` (Windows, multi-resolution)
-* `build/icon.png` (512×512, used as a fallback)
+```bash
+npm run icon
+```
 
-electron-builder picks these up from `buildResources: build` with no config
-change. Until then the app's window title and interface are correct; only the
-dock/taskbar icon is Electron's.
+electron-builder picks `build/icon.png` up from `buildResources: build` and
+derives the `.icns` and `.ico` each platform needs, so there is one vector to
+edit and nothing hand-maintained per platform.
 
----
+The rasteriser is Chromium, driven by `scripts/make-icon.mjs`, because Chromium
+is already present for the end-to-end tests and renders the gradients exactly
+as the application will. On a machine whose installed browser build does not
+match Playwright's expected revision, point at it:
+
+```bash
+CHROMIUM_PATH=/path/to/chrome npm run icon
+```
+
+**The mark is a reconstruction, not the original artwork.** It was rebuilt as
+vector from the supplied logo — a chrome ringed planet, drawn as an annulus
+with a banded ring whose far edge falls into navy. To use the original instead,
+replace `build/icon.png` with a square PNG of at least 512×512 (1024 preferred)
+and skip `npm run icon`; nothing else needs to change. The in-application mark
+is separate and lives in
+[`src/renderer/src/components/Brand.tsx`](../src/renderer/src/components/Brand.tsx).
 
 ## 7. What the uninstaller does not do
 

@@ -1,7 +1,7 @@
 {
   "name": "orbit",
   "version": "0.1.0",
-  "description": "Orbit \u2014 Life orbits around it. A private, offline-first personal life management desktop application.",
+  "description": "Orbit — Life orbits around it. A private, offline-first personal life management desktop application.",
   "author": {
     "name": "Orbit"
   },
@@ -12,6 +12,7 @@
     "dev": "electron-vite dev",
     "start": "electron-vite preview",
     "build": "npm run typecheck && electron-vite build",
+    "icon": "node scripts/make-icon.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
     "test": "vitest run",
     "test:watch": "vitest",

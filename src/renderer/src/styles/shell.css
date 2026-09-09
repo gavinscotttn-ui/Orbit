@@ -13,9 +13,13 @@
   flex-direction: column;
   gap: 4px;
   padding: 0 12px 12px;
-  background: linear-gradient(178deg, var(--navy-800) 0%, var(--navy-900) 100%);
+  /* Cooled slightly towards the mark's steel, with a faint wash of brand
+     light in the top corner so the panel is not a flat slab. */
+  background:
+    radial-gradient(120% 62% at 0% 0%, rgba(109, 143, 198, 0.14), transparent 62%),
+    linear-gradient(178deg, var(--navy-800) 0%, var(--navy-900) 100%);
   color: var(--silver);
-  box-shadow: 1px 0 0 rgba(255, 255, 255, 0.04), 6px 0 24px rgba(5, 8, 15, 0.14);
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.05), 6px 0 26px rgba(5, 8, 15, 0.18);
   overflow: hidden;
 }
 
@@ -29,36 +33,9 @@
   /* Leaves room for the macOS traffic lights, which sit over the window. */
   -webkit-app-region: drag;
 }
-.brand .mark {
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  flex: 0 0 auto;
-  border-radius: 9px;
-  background: linear-gradient(140deg, #4d7fdd, #1d3a75);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 4px 12px rgba(10, 20, 45, 0.5);
-  color: #fff;
-}
-.brand .name {
-  min-width: 0;
-}
-.brand .name b {
-  display: block;
-  color: #fff;
-  font-size: 14.5px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-}
-.brand .name small {
-  display: block;
-  margin-top: -1px;
-  color: #7d8ba6;
-  font-size: 10.5px;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+/* The lockup carries its own type and colour; the sidebar only positions it. */
+.brand .orbit-lockup {
+  width: 100%;
 }
 
 .nav {
@@ -132,9 +109,12 @@
   color: #cfe0ff;
 }
 .nav button.active {
-  background: rgba(93, 140, 226, 0.2);
+  /* A rail plus a gradient that fades to the right, so the eye reads the rail
+     as the marker and the fill as its glow rather than as a second button. */
+  background: linear-gradient(90deg, rgba(109, 155, 239, 0.26), rgba(109, 155, 239, 0.06));
   color: #fff;
-  box-shadow: inset 2px 0 0 var(--accent);
+  font-weight: 600;
+  box-shadow: inset 2.5px 0 0 var(--mark-3);
 }
 .nav button.active .ico {
   color: #9dc0ff;

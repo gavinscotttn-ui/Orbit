@@ -7,6 +7,7 @@ import {
   calculatePayroll,
   cashflowByMonth,
   daysUntilMonthlyDue,
+  dearestMonth,
   isOverdue,
   latenessProfile,
   netWorth,
@@ -383,5 +384,40 @@ describe('product keys for price history', () => {
   it('matches the same product written differently', () => {
     expect(productKey('Heinz Baked Beans 415g')).toBe(productKey('heinz baked beans  415 g'))
     expect(productKey('Milk, Semi-Skimmed (2L)')).toBe('milk semi skimmed 2l')
+  })
+})
+
+describe('dearestMonth', () => {
+  it('finds a month that is genuinely ahead of the rest', () => {
+    expect(dearestMonth([10000, 12000, 40000, 11000])).toBe(2)
+  })
+
+  it('returns nothing when every month is identical', () => {
+    // The bug this exists for: six identical bills a month, all six labelled
+    // "the dearest", which is both wrong and useless.
+    expect(dearestMonth([21100, 21100, 21100, 21100, 21100, 21100])).toBeNull()
+  })
+
+  it('returns nothing when the leader is only marginally ahead', () => {
+    expect(dearestMonth([21100, 21100, 21150])).toBeNull()
+  })
+
+  it('ignores a difference smaller than a pound even in tiny amounts', () => {
+    expect(dearestMonth([100, 150])).toBeNull()
+  })
+
+  it('accepts a difference of a pound or more in tiny amounts', () => {
+    expect(dearestMonth([100, 250])).toBe(1)
+  })
+
+  it('returns nothing when there is no money at all', () => {
+    expect(dearestMonth([0, 0, 0])).toBeNull()
+    expect(dearestMonth([])).toBeNull()
+  })
+
+  it('picks the first of two joint leaders rather than neither, when they lead', () => {
+    // Two months tie at the top but both stand well clear of the others; the
+    // first is named, because naming both would say "the dearest" twice.
+    expect(dearestMonth([10000, 50000, 50000])).toBe(1)
   })
 })

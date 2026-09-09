@@ -6,6 +6,7 @@ import { ALL_LOCALES } from '../lib/locales.js'
 import { bytes as fmtBytes, date as fmtDate, humanise } from '../lib/format.js'
 import { CurrencySelect } from '../components/Form.js'
 import { Icon, type IconName } from '../components/Icon.js'
+import { OrbitMark } from '../components/Brand.js'
 import { Chip, EmptyState, Loading, Modal, Notice, useConfirm } from '../components/ui.js'
 import type { Navigator } from '../app/App.js'
 
@@ -778,19 +779,7 @@ function AboutSection(): ReactNode {
       <div className="card">
         <div className="card-body" style={{ display: 'grid', gap: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <span
-              style={{
-                display: 'grid',
-                placeItems: 'center',
-                width: 46,
-                height: 46,
-                borderRadius: 14,
-                background: 'linear-gradient(140deg, #4d7fdd, #1d3a75)',
-                color: '#fff'
-              }}
-            >
-              <Icon name="orbit" size={24} strokeWidth={1.5} />
-            </span>
+            <OrbitMark size={54} title="Orbit" />
             <div>
               <h2 style={{ fontSize: 18 }}>Orbit {info?.version ?? ''}</h2>
               <p style={{ color: 'var(--muted)', fontSize: 13 }}>Life orbits around it.</p>

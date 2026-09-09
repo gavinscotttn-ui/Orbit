@@ -17,6 +17,7 @@ import {
   billPeriodKey,
   calculatePayroll,
   cashflowByMonth,
+  dearestMonth,
   isOverdue,
   latenessProfile,
   netWorth,
@@ -845,8 +846,14 @@ function forwardCostView(
     bucket.billCount += 1
   }
   const rows = [...buckets.entries()].map(([key, value]) => ({ monthKey: key, ...value, busiest: false }))
-  const max = Math.max(0, ...rows.map((r) => r.committedMinor))
-  for (const row of rows) row.busiest = max > 0 && row.committedMinor === max
+  // "The dearest month" only means something when one month actually stands
+  // out. Six identical bills a month is the common case, and flagging all six
+  // as the worst is both wrong and useless.
+  const standout = dearestMonth(rows.map((r) => r.committedMinor))
+  if (standout !== null) {
+    const leader = rows[standout]
+    if (leader) leader.busiest = true
+  }
   return rows
 }
 

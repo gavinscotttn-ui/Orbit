@@ -168,12 +168,19 @@ function MoneyOverview({ nav, onView }: { nav: Navigator; onView: (view: View) =
           label="In this month"
           value={money(data.thisMonth.incomeMinor, format, data.currency)}
           detail="Actual money only"
-          tone="good"
+          {...(data.thisMonth.incomeMinor > 0 ? { tone: 'good' as const } : {})}
         />
         <StatCard
           label="Out this month"
           value={money(data.thisMonth.expenseMinor, format, data.currency)}
-          detail={`Saving ${percentFromBp(data.savingsRateBp, format)} of what came in`}
+          // A savings rate against no income is not 0%, it is undefined, and
+          // printing "saving 0% of what came in" beside a month with nothing
+          // coming in reads as a judgement rather than a fact.
+          detail={
+            data.thisMonth.incomeMinor > 0
+              ? `Saving ${percentFromBp(data.savingsRateBp, format)} of what came in`
+              : 'Nothing recorded coming in this month'
+          }
           tone={data.thisMonth.netMinor < 0 ? 'bad' : undefined}
         />
       </div>
@@ -187,6 +194,23 @@ function MoneyOverview({ nav, onView }: { nav: Navigator; onView: (view: View) =
             </div>
           </div>
           <div className="card-body">
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '58px 1fr 92px',
+                gap: 12,
+                marginBottom: 10,
+                color: 'var(--muted-2)',
+                fontSize: 10.5,
+                fontWeight: 600,
+                letterSpacing: '0.07em',
+                textTransform: 'uppercase'
+              }}
+            >
+              <span>Month</span>
+              <span>In, then out</span>
+              <span style={{ textAlign: 'right' }}>Left over</span>
+            </div>
             <div style={{ display: 'grid', gap: 12 }}>
               {data.series.map((month) => (
                 <div key={month.monthKey} style={{ display: 'grid', gridTemplateColumns: '58px 1fr 92px', gap: 12, alignItems: 'center' }}>

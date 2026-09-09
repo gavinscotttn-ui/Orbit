@@ -778,3 +778,25 @@ export function productKey(name: string): string {
     .trim()
     .slice(0, 80)
 }
+
+/**
+ * Which of a run of monthly totals genuinely stands out as the dearest.
+ *
+ * Returns the index of the standout month, or null when there is not one.
+ * There is not one when everything is zero, when every month ties (a tie has
+ * no winner), or when the leader is only marginally ahead — highlighting a
+ * month that is £2 dearer than its neighbours tells the reader nothing and
+ * costs them a moment working out why it is coloured.
+ */
+export function dearestMonth(amountsMinor: number[]): number | null {
+  if (amountsMinor.length === 0) return null
+  const max = Math.max(...amountsMinor)
+  if (max <= 0) return null
+  const below = amountsMinor.filter((a) => a < max)
+  if (below.length === 0) return null
+  const runnerUp = Math.max(...below)
+  // Five per cent, or a pound, whichever is larger: enough to be visible on a
+  // bar and enough to be worth a word.
+  if (max - runnerUp < Math.max(100, max * 0.05)) return null
+  return amountsMinor.indexOf(max)
+}

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react
 import { useApp } from './state.js'
 import { callOr, onEvent } from '../lib/api.js'
 import { Icon, type IconName } from '../components/Icon.js'
+import { OrbitLockup, OrbitMark } from '../components/Brand.js'
 import { Toasts } from '../components/ui.js'
 import { FirstRun } from './FirstRun.js'
 import { CommandPalette } from './CommandPalette.js'
@@ -116,7 +117,7 @@ export function App(): ReactNode {
     return (
       <div style={{ display: 'grid', placeItems: 'center', height: '100%', color: 'var(--muted)' }}>
         <div style={{ display: 'grid', placeItems: 'center', gap: 12 }}>
-          <Icon name="orbit" size={34} strokeWidth={1.4} />
+          <OrbitMark size={44} title="Orbit" />
           <span>Starting Orbit…</span>
         </div>
       </div>
@@ -275,13 +276,7 @@ function Sidebar({ nav, onOpenSettings }: { nav: Navigator; onOpenSettings: () =
   return (
     <aside className="sidebar">
       <div className="brand">
-        <span className="mark">
-          <Icon name="orbit" size={18} strokeWidth={1.6} />
-        </span>
-        <span className="name">
-          <b>ORBIT</b>
-          <small>{vault?.manifest?.name ?? 'Vault'}</small>
-        </span>
+        <OrbitLockup size={14.5} tone="light" subtitle={vault?.manifest?.name ?? 'Vault'} />
       </div>
 
       <nav className="nav" aria-label="Main">

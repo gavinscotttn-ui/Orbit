@@ -16,16 +16,26 @@
   --navy-900: #0b1220;
   --navy-800: #121a2b;
   --navy-700: #172034;
-  --accent: #3d6fd0;
-  --accent-strong: #2b56ab;
-  --accent-soft: #e8effc;
+  --accent: #35619f;
+  --accent-strong: #274a7d;
+  --accent-soft: #e9f0fa;
   --accent-ink: #ffffff;
   --silver: #c6d3e8;
+
+  /* The mark's chrome ramp. Named separately from the accent because the logo
+     is a fixed object with its own colours, not a themeable accent. Pale
+     grounds need a darker ramp or the highlight disappears into the page. */
+  --mark-1: #c3d8f2;
+  --mark-2: #94b4e0;
+  --mark-3: #5b83bd;
+  --mark-4: #22406f;
+  --mark-shadow: #0d1728;
+  --mark-shadow-2: #274a80;
 
   /* Surfaces */
   --bg: #f3f5f9;
   --panel: #ffffff;
-  --panel-2: #fafbfd;
+  --panel-2: #f7f9fc;
   --panel-raised: #ffffff;
   --line: #e2e7ef;
   --line-strong: #cdd5e2;
@@ -74,15 +84,23 @@
   --navy-900: #05080f;
   --navy-800: #0a0f1a;
   --navy-700: #101725;
-  --accent: #6d9bef;
-  --accent-strong: #85adf5;
-  --accent-soft: #16233a;
+  --accent: #7ea6ec;
+  --accent-strong: #9cbdf6;
+  --accent-soft: #17243b;
   --accent-ink: #06101f;
   --silver: #9fb3d1;
 
+  /* On a dark ground the ramp runs bright, the way the mark was drawn. */
+  --mark-1: #ffffff;
+  --mark-2: #eff5fe;
+  --mark-3: #c2d4ee;
+  --mark-4: #6d8fc6;
+  --mark-shadow: #16213c;
+  --mark-shadow-2: #3f5f9c;
+
   --bg: #0d1017;
   --panel: #151922;
-  --panel-2: #11151d;
+  --panel-2: #12171f;
   --panel-raised: #1b2029;
   --line: #242a36;
   --line-strong: #333b4a;
@@ -129,4 +147,65 @@
 :root[data-reduce-motion='true'] *::after {
   animation-duration: 0.001ms !important;
   transition-duration: 0.001ms !important;
+}
+
+/*
+ * The mark can be pinned regardless of theme, for surfaces that do not follow
+ * it. The sidebar is dark in both themes, so its mark is always the bright
+ * ramp; a printed or pale panel gets the dark one.
+ */
+.orbit-mark.tone-light {
+  --mark-1: #ffffff;
+  --mark-2: #eff5fe;
+  --mark-3: #c2d4ee;
+  --mark-4: #6d8fc6;
+  --mark-shadow: #16213c;
+  --mark-shadow-2: #3f5f9c;
+}
+.orbit-mark.tone-dark {
+  --mark-1: #c3d8f2;
+  --mark-2: #94b4e0;
+  --mark-3: #5b83bd;
+  --mark-4: #22406f;
+  --mark-shadow: #0d1728;
+  --mark-shadow-2: #274a80;
+}
+
+.orbit-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.orbit-lockup .lockup-text {
+  min-width: 0;
+  line-height: 1.15;
+}
+.orbit-lockup .lockup-text b {
+  display: block;
+  font-weight: 650;
+  /* Wide tracking is the wordmark's defining feature; it is what keeps the
+     letters reading as the logo rather than as a heading. */
+  letter-spacing: 0.22em;
+  text-indent: 0.22em;
+  background-image: linear-gradient(178deg, var(--mark-1) 8%, var(--mark-2) 34%, var(--mark-3) 68%, var(--mark-4) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.orbit-lockup.tone-light .lockup-text b {
+  background-image: linear-gradient(178deg, #ffffff 8%, #eff5fe 34%, #c2d4ee 68%, #8fabd8 100%);
+}
+.orbit-lockup .lockup-text small {
+  display: block;
+  margin-top: 1px;
+  color: var(--muted);
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.orbit-lockup.tone-light .lockup-text small {
+  color: #8797b4;
 }

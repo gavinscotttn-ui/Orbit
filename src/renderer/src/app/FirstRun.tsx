@@ -4,6 +4,7 @@ import { call } from '../lib/api.js'
 import { useApp } from '../app/state.js'
 import { date as fmtDate } from '../lib/format.js'
 import { Icon } from '../components/Icon.js'
+import { OrbitMark } from '../components/Brand.js'
 import { Modal, Notice, useConfirm } from '../components/ui.js'
 
 /**
@@ -38,9 +39,21 @@ export function FirstRun(): ReactNode {
   const [lockPrompt, setLockPrompt] = useState<{ path: string; holder: string; stale: boolean } | null>(null)
   const [naming, setNaming] = useState<{ path: string } | null>(null)
   const [vaultName, setVaultName] = useState('My Orbit vault')
+  const [showAllRecents, setShowAllRecents] = useState(false)
 
-  const recents = vault?.recents ?? []
+  const allRecents = vault?.recents ?? []
   const portable = vault?.portable ?? null
+
+  // Vaults Orbit can still find come first. A column of "Missing" rows above
+  // the thing you actually came here to do is a poor greeting, and a vault on
+  // an unplugged drive is not urgent — it is just not here today.
+  const missing = allRecents.filter((entry) => !entry.available)
+  const present = allRecents.filter((entry) => entry.available)
+  // A long tail of vaults on drives that are not plugged in is worth keeping —
+  // people do come back to them — but not worth pushing the three things you
+  // came here to do below the fold.
+  const hiddenMissing = showAllRecents ? 0 : Math.max(0, missing.length - 3)
+  const recents = [...present, ...(showAllRecents ? missing : missing.slice(0, 3))]
 
   const handleResult = async (result: OpenResponse, context: string): Promise<void> => {
     if (result.opened) {
@@ -164,23 +177,10 @@ export function FirstRun(): ReactNode {
     >
       <div style={{ maxWidth: 760, margin: '0 auto', padding: '56px 24px 72px' }}>
         <header style={{ textAlign: 'center', marginBottom: 34 }}>
-          <div
-            aria-hidden="true"
-            style={{
-              display: 'grid',
-              placeItems: 'center',
-              width: 62,
-              height: 62,
-              margin: '0 auto 18px',
-              borderRadius: 20,
-              background: 'linear-gradient(140deg, #4d7fdd, #1d3a75)',
-              color: '#fff',
-              boxShadow: '0 12px 34px rgba(29, 58, 117, 0.32)'
-            }}
-          >
-            <Icon name="orbit" size={32} strokeWidth={1.5} />
+          <div style={{ margin: '0 auto 14px', lineHeight: 0 }}>
+            <OrbitMark size={96} />
           </div>
-          <h1 style={{ fontSize: 30, letterSpacing: '-0.03em' }}>Orbit</h1>
+          <h1 style={{ fontSize: 26, letterSpacing: '0.24em', textIndent: '0.24em', fontWeight: 650 }}>ORBIT</h1>
           <p style={{ marginTop: 7, color: 'var(--muted)', fontSize: 14 }}>Life orbits around it.</p>
         </header>
 
@@ -230,7 +230,31 @@ export function FirstRun(): ReactNode {
         {recents.length > 0 ? (
           <div className="card" style={{ marginBottom: 18 }}>
             <div className="card-head">
-              <h2>Recent vaults</h2>
+              <div>
+                <h2>Recent vaults</h2>
+                {missing.length > 0 ? (
+                  <p className="sub">
+                    {missing.length} of these {missing.length === 1 ? 'is' : 'are'} not where Orbit last saw{' '}
+                    {missing.length === 1 ? 'it' : 'them'}
+                  </p>
+                ) : null}
+              </div>
+              {missing.length > 1 ? (
+                <button
+                  className="btn small"
+                  disabled={Boolean(busy)}
+                  onClick={() => {
+                    void (async () => {
+                      // Forgetting a vault removes it from this list only. The
+                      // folder, wherever it is, is not touched.
+                      for (const entry of missing) await call('vault.forget', { path: entry.path })
+                      await refreshVault()
+                    })()
+                  }}
+                >
+                  Forget the missing ones
+                </button>
+              ) : null}
             </div>
             <ul>
               {recents.map((entry) => (
@@ -250,6 +274,13 @@ export function FirstRun(): ReactNode {
                 />
               ))}
             </ul>
+            {hiddenMissing > 0 ? (
+              <div style={{ padding: '10px 16px', borderTop: '1px solid var(--line)' }}>
+                <button className="btn small ghost" onClick={() => setShowAllRecents(true)}>
+                  Show {hiddenMissing} more Orbit cannot find
+                </button>
+              </div>
+            ) : null}
           </div>
         ) : null}
 

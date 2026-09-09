@@ -90,6 +90,8 @@ export function TodayPage({ nav }: { nav: Navigator }): ReactNode {
   const nothingAtAll =
     brief.attention.length === 0 && brief.agenda.length === 0 && brief.tasksDue.length === 0 && brief.habits.length === 0
 
+  const forward = describeForwardView(brief.forwardView)
+
   return (
     <>
       <div className="page-head">
@@ -302,26 +304,38 @@ export function TodayPage({ nav }: { nav: Navigator }): ReactNode {
               </button>
             </div>
             <div className="card-body" style={{ display: 'grid', gap: 12 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                <span style={{ color: 'var(--muted)' }}>In</span>
-                <span className="money in">{money(brief.money.incomeMinor, format, brief.money.currency)}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                <span style={{ color: 'var(--muted)' }}>Out</span>
-                <span className="money out">{money(brief.money.spendMinor, format, brief.money.currency)}</span>
-              </div>
-              <Meter
-                value={brief.money.spendMinor}
-                max={Math.max(brief.money.incomeMinor, brief.money.spendMinor, 1)}
-                tone={brief.money.spendMinor > brief.money.incomeMinor ? 'bad' : 'good'}
-                label="Spending against income this month"
-              />
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 600 }}>
-                <span>Left</span>
-                <span className={`money ${brief.money.incomeMinor - brief.money.spendMinor < 0 ? 'out' : 'in'}`}>
-                  {money(brief.money.incomeMinor - brief.money.spendMinor, format, brief.money.currency)}
-                </span>
-              </div>
+              {brief.money.incomeMinor === 0 && brief.money.spendMinor === 0 ? (
+                /* Three zeroes and an empty bar look like a broken screen. Say
+                   what is actually true: there is nothing recorded yet. */
+                <p className="help" style={{ margin: 0 }}>
+                  No money has been recorded this month yet. Add transactions, or import a statement, and this fills in.
+                </p>
+              ) : (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+                    <span style={{ color: 'var(--muted)' }}>In</span>
+                    <span className="money in">{money(brief.money.incomeMinor, format, brief.money.currency)}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+                    <span style={{ color: 'var(--muted)' }}>Out</span>
+                    <span className="money out">{money(brief.money.spendMinor, format, brief.money.currency)}</span>
+                  </div>
+                  {brief.money.incomeMinor > 0 ? (
+                    <Meter
+                      value={brief.money.spendMinor}
+                      max={Math.max(brief.money.incomeMinor, brief.money.spendMinor, 1)}
+                      tone={brief.money.spendMinor > brief.money.incomeMinor ? 'bad' : 'good'}
+                      label="Spending against income this month"
+                    />
+                  ) : null}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 600 }}>
+                    <span>{brief.money.incomeMinor > 0 ? 'Left' : 'Net'}</span>
+                    <span className={`money ${brief.money.incomeMinor - brief.money.spendMinor < 0 ? 'out' : 'in'}`}>
+                      {money(brief.money.incomeMinor - brief.money.spendMinor, format, brief.money.currency)}
+                    </span>
+                  </div>
+                </>
+              )}
               {brief.money.plannedMinor > 0 ? (
                 <p className="help">
                   {money(brief.money.plannedMinor, format, brief.money.currency)} more is planned or forecast this month.
@@ -337,30 +351,29 @@ export function TodayPage({ nav }: { nav: Navigator }): ReactNode {
               <div className="card-head">
                 <div>
                   <h2>Months ahead</h2>
-                  <p className="sub">Committed bills already known about</p>
+                  <p className="sub">{forward.subtitle}</p>
                 </div>
               </div>
               <div className="card-body" style={{ display: 'grid', gap: 9 }}>
-                {brief.forwardView.map((month) => {
-                  const max = Math.max(...brief.forwardView.map((m) => m.committedMinor), 1)
-                  return (
-                    <div key={month.monthKey} style={{ display: 'grid', gap: 4 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
-                        <span style={{ color: month.busiest ? 'var(--warn)' : 'var(--muted)', fontWeight: month.busiest ? 650 : 500 }}>
-                          {monthLabel(month.monthKey, format.locale)}
-                          {month.busiest && month.committedMinor > 0 ? ' — the dearest' : ''}
-                        </span>
-                        <span className="num">{moneyCompact(month.committedMinor, format)}</span>
-                      </div>
-                      <Meter
-                        value={month.committedMinor}
-                        max={max}
-                        tone={month.busiest ? 'warn' : 'accent'}
-                        label={`Committed in ${month.monthKey}`}
-                      />
+                {brief.forwardView.map((month) => (
+                  <div key={month.monthKey} style={{ display: 'grid', gap: 4 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
+                      <span style={{ color: month.busiest ? 'var(--warn)' : 'var(--muted)', fontWeight: month.busiest ? 650 : 500 }}>
+                        {monthLabel(month.monthKey, format.locale)}
+                        {month.busiest ? ' — the dearest' : ''}
+                      </span>
+                      <span className="num">{moneyCompact(month.committedMinor, format)}</span>
                     </div>
-                  )
-                })}
+                    {/* Scaled with headroom so the largest month reads as the
+                        largest rather than as a bar that has run out of card. */}
+                    <Meter
+                      value={month.committedMinor}
+                      max={forward.scale}
+                      tone={month.busiest ? 'warn' : 'accent'}
+                      label={`Committed in ${month.monthKey}`}
+                    />
+                  </div>
+                ))}
               </div>
             </div>
           ) : null}
@@ -635,4 +648,24 @@ function monthLabel(monthKey: string, locale: string): string {
   } catch {
     return monthKey
   }
+}
+
+/**
+ * The "months ahead" card, described honestly.
+ *
+ * Six bars all at full width tell you nothing, and calling every month "the
+ * dearest" when they are identical is worse than saying nothing. So the bars
+ * are scaled with headroom, and the subtitle says what the shape actually is.
+ */
+function describeForwardView(
+  months: { monthKey: string; committedMinor: number; billCount: number; busiest: boolean }[]
+): { scale: number; subtitle: string } {
+  const amounts = months.map((m) => m.committedMinor)
+  const max = Math.max(0, ...amounts)
+  const min = Math.min(...amounts, max)
+  const scale = Math.max(1, Math.round(max * 1.12))
+  if (max > 0 && max === min) {
+    return { scale, subtitle: 'The same every month, on what you have told Orbit so far' }
+  }
+  return { scale, subtitle: 'Committed bills already known about' }
 }

@@ -274,6 +274,14 @@ toast queue, and a revision counter that screens watch to know when to re-fetch.
 Everything else is fetched by the screen that needs it, so no cache can go stale
 behind the user's back.
 
+The brand mark is drawn as inline SVG in
+[`Brand.tsx`](../src/renderer/src/components/Brand.tsx), with its gradient stops
+supplied as CSS custom properties. That makes it genuinely theme-aware — a
+brighter chrome ramp on the dark sidebar, a deeper one on a pale page — and
+means the logo is not a file that could fail to load in an application which
+refuses to fetch anything. The same vector generates the application icon
+(`build/icon.svg` → `build/icon.png`).
+
 Styling is three hand-written stylesheets: `tokens.css` (the palette and
 spacing scale, light and dark), `base.css` (elements and controls) and
 `shell.css` (layout, drawers, lists). Theme, density, text scale and
