@@ -42,9 +42,9 @@ export function SettingsPage({ nav }: { nav: Navigator }): ReactNode {
         </div>
       </div>
 
-      <div className="btn-row" style={{ marginBottom: 'var(--gap)' }}>
+      <div className="tabs" role="tablist" style={{ marginBottom: 'var(--gap)' }}>
         {SECTIONS.map(([key, label, icon]) => (
-          <button key={key} className={`btn small${section === key ? ' primary' : ''}`} onClick={() => setSection(key)}>
+          <button key={key} className={`tab${section === key ? ' active' : ''}`} onClick={() => setSection(key)}>
             <Icon name={icon} size={13} />
             {label}
           </button>

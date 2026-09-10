@@ -107,7 +107,7 @@ export function PlanPage({ nav }: { nav: Navigator }): ReactNode {
         </div>
       </div>
 
-      <div className="btn-row" style={{ marginBottom: 'var(--gap)' }}>
+      <div className="tabs" role="tablist">
         {(
           [
             ['month', 'Month'],
@@ -118,7 +118,7 @@ export function PlanPage({ nav }: { nav: Navigator }): ReactNode {
             ['life-events', 'Life events']
           ] as [View, string][]
         ).map(([key, label]) => (
-          <button key={key} className={`btn small${view === key ? ' primary' : ''}`} onClick={() => setView(key)}>
+          <button key={key} className={`tab${view === key ? ' active' : ''}`} onClick={() => setView(key)}>
             {label}
           </button>
         ))}

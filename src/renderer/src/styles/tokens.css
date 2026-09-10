@@ -57,18 +57,35 @@
   --info-soft: #e8f1fb;
 
   /* Shape */
-  --radius-s: 7px;
-  --radius: 11px;
-  --radius-l: 16px;
-  --shadow-1: 0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.06);
-  --shadow-2: 0 4px 12px rgba(16, 24, 40, 0.07), 0 12px 32px rgba(16, 24, 40, 0.06);
-  --shadow-pop: 0 18px 48px rgba(11, 18, 32, 0.18);
+  /* Shape.
+     Tighter radii read as software rather than as a web page, and shadows are
+     reserved for things that genuinely float above the page — a drawer, a
+     modal, the command palette. A shadow under a static panel is decoration
+     pretending to be depth, and it is the single strongest tell of a layout
+     assembled from defaults. */
+  --radius-s: 5px;
+  --radius: 8px;
+  --radius-l: 12px;
+  --shadow-1: none;
+  --shadow-2: 0 1px 2px rgba(16, 24, 40, 0.06), 0 8px 24px rgba(16, 24, 40, 0.08);
+  --shadow-pop: 0 24px 60px rgba(11, 18, 32, 0.22);
 
   /* Rhythm */
-  --sidebar-w: 244px;
-  --topbar-h: 62px;
-  --content-max: 1420px;
-  --gap: 16px;
+  --sidebar-w: 228px;
+  --topbar-h: 54px;
+  --content-max: 1320px;
+  --gap: 14px;
+
+  /* Type.
+     One scale, used everywhere, with real contrast between the ends of it.
+     Interfaces feel generic when everything sits within two points of 14px. */
+  --t-display: 27px;
+  --t-title: 15px;
+  --t-body: 13px;
+  --t-dense: 12.5px;
+  --t-micro: 11px;
+  --t-label: 10.5px;
+  --track-label: 0.1em;
 
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI Variable Text", "Segoe UI", Roboto,
     "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji";

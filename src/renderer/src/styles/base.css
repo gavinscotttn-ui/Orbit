@@ -17,7 +17,7 @@ body {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font);
-  font-size: 13.5px;
+  font-size: var(--t-body);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -212,26 +212,20 @@ ol {
 
 /* -- Cards ------------------------------------------------------------------ */
 
+/*
+ * A card is a hairline and a background. Nothing else.
+ *
+ * The previous version had a border, a shadow and a painted highlight along its
+ * top edge — three separate devices doing the same job, which is how a screen
+ * ends up looking assembled rather than designed. Where a group needs to be
+ * distinguished, type and space do it; the box is the last resort, not the
+ * first.
+ */
 .card {
   position: relative;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--panel);
-  box-shadow: var(--shadow-1);
-}
-/* A one-pixel lit top edge. It is the difference between a rectangle and a
-   surface, and it costs nothing. */
-.card::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto;
-  height: 1px;
-  border-radius: var(--radius) var(--radius) 0 0;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7) 18%, rgba(255, 255, 255, 0.7) 82%, transparent);
-  pointer-events: none;
-}
-:root[data-theme='dark'] .card::before {
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.07) 18%, rgba(255, 255, 255, 0.07) 82%, transparent);
 }
 
 .card-head {
@@ -239,28 +233,24 @@ ol {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 16px;
+  padding: 11px 14px;
   border-bottom: 1px solid var(--line);
-  /* The header band sits back a shade so it reads as a header rather than as
-     the first row of content. */
-  background: var(--panel-2);
-  border-radius: var(--radius) var(--radius) 0 0;
 }
 .card-head h2,
 .card-head h3 {
-  font-size: 13.5px;
+  font-size: var(--t-dense);
   font-weight: 640;
   letter-spacing: -0.005em;
 }
 .card-head .sub {
-  margin-top: 2px;
+  margin-top: 1px;
   color: var(--muted);
-  font-size: 11.5px;
+  font-size: var(--t-micro);
   font-weight: 450;
 }
 
 .card-body {
-  padding: 15px 16px;
+  padding: 13px 14px;
 }
 .card-body.flush {
   padding: 0;
@@ -520,30 +510,60 @@ textarea:disabled {
 /* -- Empty, loading and error states ---------------------------------------- */
 
 .empty {
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: flex-start;
   gap: 10px;
-  padding: 40px 24px;
-  text-align: center;
+  padding: 16px 14px;
   color: var(--muted);
 }
-.empty .glyph {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  background: var(--accent-soft);
-  color: var(--accent);
+.empty > svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: var(--muted-2);
 }
 .empty h3 {
-  color: var(--ink);
-  font-size: 14.5px;
+  color: var(--ink-2);
+  font-size: var(--t-dense);
+  font-weight: 600;
 }
 .empty p {
-  max-width: 46ch;
-  font-size: 12.5px;
+  margin-top: 2px;
+  max-width: 56ch;
+  font-size: var(--t-micro);
   line-height: 1.6;
+}
+
+/*
+ * Meters.
+ *
+ * Thin, and coloured only where the colour carries meaning. A row of thick
+ * saturated bars reads as a chart being emphatic about nothing — the shape of
+ * the data is the message, and 4px of it is plenty to see the shape.
+ */
+.meter {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+.meter-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--muted-2);
+  transition: width 0.3s ease;
+}
+.meter.tone-accent .meter-fill {
+  background: var(--accent);
+  opacity: 0.55;
+}
+.meter.tone-good .meter-fill {
+  background: var(--good);
+}
+.meter.tone-warn .meter-fill {
+  background: var(--warn);
+}
+.meter.tone-bad .meter-fill {
+  background: var(--bad);
 }
 
 .skeleton {
@@ -738,4 +758,204 @@ textarea:disabled {
 .type-card.has-records small {
   color: var(--accent);
   font-weight: 600;
+}
+
+/*
+ * The record-type index.
+ *
+ * Columns of dense rows rather than a grid of tiles: the whole of Orbit's
+ * vocabulary fits on a screen and a half, ordered and scannable, with the
+ * counts aligned in their own column so the eye can run down them. Types you
+ * have nothing in stay legible and clickable — reaching them is how they stop
+ * being empty — but they do not shout.
+ */
+.type-index {
+  columns: 3 210px;
+  column-gap: 26px;
+}
+.type-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: var(--radius-s);
+  color: var(--muted);
+  font-size: var(--t-dense);
+  text-align: left;
+  /* Rows must not be split across columns. */
+  break-inside: avoid;
+}
+.type-row:hover {
+  background: var(--panel);
+  color: var(--ink);
+}
+.type-row .type-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.type-row .type-count {
+  flex: 0 0 auto;
+  min-width: 2.2em;
+  color: var(--muted-2);
+  font-size: var(--t-micro);
+  font-variant-numeric: var(--num);
+  text-align: right;
+}
+.type-row.has-records {
+  color: var(--ink);
+  font-weight: 550;
+}
+.type-row.has-records .type-count {
+  color: var(--accent);
+  font-weight: 650;
+}
+
+/*
+ * "When", at the end of a row.
+ *
+ * A fixed column so the dates line up down the list, tabular figures so they do
+ * not shuffle, and colour only where it means something is late or now.
+ */
+.when {
+  flex: 0 0 auto;
+  min-width: 6.5em;
+  color: var(--muted);
+  font-size: var(--t-micro);
+  font-variant-numeric: var(--num);
+  text-align: right;
+  white-space: nowrap;
+}
+.when.soon {
+  color: var(--warn);
+  font-weight: 600;
+}
+.when.overdue {
+  color: var(--bad);
+  font-weight: 650;
+}
+
+/*
+ * Headline figures.
+ *
+ * A row of them, divided by hairlines rather than boxed individually. The
+ * number carries the weight; the label is small, tracked and quiet; the detail
+ * line under it is quieter still.
+ */
+.stat {
+  padding: 2px 18px 2px 0;
+  border-right: 1px solid var(--line);
+  text-align: left;
+  width: 100%;
+}
+.stat:last-child,
+.grid > .stat:last-child {
+  border-right: 0;
+}
+.stat.interactive {
+  cursor: pointer;
+  border-radius: var(--radius-s);
+}
+.stat.interactive:hover .stat-value {
+  color: var(--accent);
+}
+.stat-label {
+  color: var(--muted-2);
+  font-size: var(--t-label);
+  font-weight: 700;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+}
+.stat-value {
+  margin-top: 5px;
+  font-size: 24px;
+  font-weight: 620;
+  letter-spacing: -0.028em;
+  line-height: 1.15;
+}
+.stat-detail {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: var(--t-micro);
+}
+
+/* A row of figures reads as one object, so it gets the padding, not each cell. */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0;
+  padding: 16px 0 18px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 4px;
+}
+
+/*
+ * Tabs.
+ *
+ * A row of buttons with one of them filled blue is a segmented control, and it
+ * shouts: six loud rectangles competing with the content they are meant to be
+ * navigating. A tab bar states the same thing with a rule and a marker under
+ * the current one, which is what desktop software has done for thirty years
+ * because it works.
+ */
+.tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: var(--gap);
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+.tab {
+  position: relative;
+  flex: 0 0 auto;
+  padding: 8px 12px 9px;
+  color: var(--muted);
+  font-size: var(--t-dense);
+  font-weight: 520;
+  white-space: nowrap;
+  border-radius: var(--radius-s) var(--radius-s) 0 0;
+  transition: color 0.12s, background 0.12s;
+}
+.tab:hover {
+  color: var(--ink);
+  background: var(--panel-2);
+}
+.tab.active {
+  color: var(--ink);
+  font-weight: 620;
+}
+.tab.active::after {
+  content: '';
+  position: absolute;
+  inset: auto 8px -1px;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--accent);
+}
+
+/* Paired in/out bars on a shared scale. */
+.bar {
+  height: 5px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 999px;
+}
+.bar-fill.in {
+  background: var(--good);
+  opacity: 0.8;
+}
+.bar-fill.out {
+  background: var(--bad);
+  opacity: 0.75;
 }

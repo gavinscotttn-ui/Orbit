@@ -62,9 +62,9 @@ export function MoneyPage({ nav }: { nav: Navigator }): ReactNode {
         </div>
       </div>
 
-      <div className="btn-row" style={{ marginBottom: 'var(--gap)' }}>
+      <div className="tabs" role="tablist">
         {(Object.keys(LABELS) as View[]).map((key) => (
-          <button key={key} className={`btn small${view === key ? ' primary' : ''}`} onClick={() => setView(key)}>
+          <button key={key} className={`tab${view === key ? ' active' : ''}`} onClick={() => setView(key)}>
             {LABELS[key]}
           </button>
         ))}
@@ -157,7 +157,7 @@ function MoneyOverview({ nav, onView }: { nav: Navigator; onView: (view: View) =
 
   return (
     <div style={{ display: 'grid', gap: 'var(--gap)' }}>
-      <div className="grid three">
+      <div className="stat-row">
         <StatCard
           label="Across your accounts"
           value={money(totalBalance, format, data.currency)}
@@ -215,12 +215,15 @@ function MoneyOverview({ nav, onView }: { nav: Navigator; onView: (view: View) =
               {data.series.map((month) => (
                 <div key={month.monthKey} style={{ display: 'grid', gridTemplateColumns: '58px 1fr 92px', gap: 12, alignItems: 'center' }}>
                   <span style={{ color: 'var(--muted)', fontSize: 12 }}>{shortMonth(month.monthKey, format.locale)}</span>
+                  {/* Two thin bars against a shared scale. Thick saturated
+                      bars make every month look like an emergency; the shape of
+                      the pair is the information. */}
                   <div style={{ display: 'grid', gap: 3 }}>
-                    <div style={{ height: 8, borderRadius: 999, background: 'var(--line)', overflow: 'hidden' }}>
-                      <div style={{ width: `${(month.incomeMinor / maxMonth) * 100}%`, height: '100%', background: 'var(--good)' }} />
+                    <div className="bar">
+                      <div className="bar-fill in" style={{ width: `${(month.incomeMinor / maxMonth) * 100}%` }} />
                     </div>
-                    <div style={{ height: 8, borderRadius: 999, background: 'var(--line)', overflow: 'hidden' }}>
-                      <div style={{ width: `${(month.expenseMinor / maxMonth) * 100}%`, height: '100%', background: 'var(--bad)' }} />
+                    <div className="bar">
+                      <div className="bar-fill out" style={{ width: `${(month.expenseMinor / maxMonth) * 100}%` }} />
                     </div>
                   </div>
                   <span className={`money ${month.netMinor < 0 ? 'out' : 'in'}`} style={{ fontSize: 12.5, textAlign: 'right' }}>
@@ -337,7 +340,7 @@ function AccountsView({ nav }: { nav: Navigator }): ReactNode {
   return (
     <div style={{ display: 'grid', gap: 'var(--gap)' }}>
       {data && data.balances.length > 0 ? (
-        <div className="grid three">
+        <div className="stat-row">
           {data.balances.map((account) => (
             <StatCard
               key={account.id}
@@ -735,7 +738,7 @@ function PayView({ nav }: { nav: Navigator }): ReactNode {
 
   return (
     <div style={{ display: 'grid', gap: 'var(--gap)' }}>
-      <div className="grid three">
+      <div className="stat-row">
         <StatCard label="Gross a year" value={money(b.annualGrossMinor, format, data.currency)} />
         <StatCard label="Take-home a year" value={money(b.annualNetMinor, format, data.currency)} tone="good" />
         <StatCard
@@ -855,7 +858,7 @@ function NetWorthView({ nav }: { nav: Navigator }): ReactNode {
         </Notice>
       ) : null}
 
-      <div className="grid three">
+      <div className="stat-row">
         <StatCard label="Assets" value={money(data.assetsMinor, format, data.currency)} tone="good" />
         <StatCard label="Liabilities" value={money(data.liabilitiesMinor, format, data.currency)} tone="bad" />
         <StatCard label="Net worth" value={money(data.netMinor, format, data.currency)} />
@@ -964,7 +967,7 @@ function DebtView(): ReactNode {
             />
           ) : (
             <>
-              <div className="grid three">
+              <div className="stat-row">
                 <StatCard label="Clear in" value={plan.incomplete ? 'Not within 50 years' : `${plan.months} months`} />
                 <StatCard label="Interest paid" value={money(plan.totalInterestMinor, format, plan.currency)} tone="bad" />
                 <StatCard label="Total paid" value={money(plan.totalPaidMinor, format, plan.currency)} />

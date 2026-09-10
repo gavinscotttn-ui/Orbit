@@ -169,8 +169,16 @@ export function LifePage({ nav }: { nav: Navigator }): ReactNode {
               </button>
             )
           })}
+        </div>
+
+        <div className="section-head">
+          <div>
+            <h2>Everything in this area</h2>
+          </div>
+        </div>
+        <div className="type-index">
           {inModule.map((entity) => (
-            <TypeCard key={entity.type} entity={entity} count={counts[entity.type] ?? 0} nav={nav} />
+            <TypeRow key={entity.type} entity={entity} count={counts[entity.type] ?? 0} nav={nav} />
           ))}
         </div>
       </>
@@ -244,9 +252,9 @@ export function LifePage({ nav }: { nav: Navigator }): ReactNode {
                 </span>
               ) : null}
             </div>
-            <div className="grid three">
+            <div className="type-index">
               {group.list.map((entity) => (
-                <TypeCard key={entity.type} entity={entity} count={counts[entity.type] ?? 0} nav={nav} />
+                <TypeRow key={entity.type} entity={entity} count={counts[entity.type] ?? 0} nav={nav} />
               ))}
             </div>
           </section>
@@ -271,7 +279,7 @@ export function LifePage({ nav }: { nav: Navigator }): ReactNode {
   )
 }
 
-function TypeCard({
+function TypeRow({
   entity,
   count,
   nav
@@ -280,22 +288,15 @@ function TypeCard({
   count: number
   nav: Navigator
 }): ReactNode {
-  // An index of eighty record types is mostly empty for everybody, always. The
-  // tiles holding something are the ones worth seeing, so the empty ones step
-  // back rather than being hidden — they still have to be reachable, because
-  // reaching them is how they stop being empty.
+  // An index of eighty record types is a list, not a gallery. Eighty bordered
+  // tiles three abreast is four screens of scrolling to learn what a dense list
+  // says in one, and it gives eighty equal things equal visual weight when what
+  // the reader wants is the four they have anything in.
   return (
-    <button
-      className={`card type-card${count > 0 ? ' has-records' : ''}`}
-      onClick={() => nav.go({ page: 'life', type: entity.type })}
-    >
-      <span className="type-icon">
-        <Icon name={iconForEntity(entity.icon)} size={16} />
-      </span>
-      <span style={{ flex: 1, minWidth: 0 }}>
-        <b>{entity.plural}</b>
-        <small>{count > 0 ? `${count} record${count === 1 ? '' : 's'}` : 'None yet'}</small>
-      </span>
+    <button className={`type-row${count > 0 ? ' has-records' : ''}`} onClick={() => nav.go({ page: 'life', type: entity.type })}>
+      <Icon name={iconForEntity(entity.icon)} size={14} />
+      <span className="type-name">{entity.plural}</span>
+      <span className="type-count">{count > 0 ? count.toLocaleString() : ''}</span>
     </button>
   )
 }

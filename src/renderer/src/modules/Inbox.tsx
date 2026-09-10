@@ -108,7 +108,7 @@ export function InboxPage({ nav }: { nav: Navigator }): ReactNode {
         </div>
       </div>
 
-      <div className="btn-row" style={{ marginBottom: 'var(--gap)' }}>
+      <div className="tabs" role="tablist" style={{ marginBottom: 'var(--gap)' }}>
         {(
           [
             ['new', 'To sort'],
@@ -116,7 +116,7 @@ export function InboxPage({ nav }: { nav: Navigator }): ReactNode {
             ['archived', 'Archived']
           ] as ['new' | 'converted' | 'archived', string][]
         ).map(([key, label]) => (
-          <button key={key} className={`btn small${status === key ? ' primary' : ''}`} onClick={() => setStatus(key)}>
+          <button key={key} className={`tab${status === key ? ' active' : ''}`} onClick={() => setStatus(key)}>
             {label}
           </button>
         ))}

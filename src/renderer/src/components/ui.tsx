@@ -186,13 +186,17 @@ export function EmptyState({
   message?: string
   action?: ReactNode
 }): ReactNode {
+  // An empty state is a sentence explaining an absence. The centred icon in a
+  // tinted rounded square, forty pixels of padding above and below, is the
+  // house style of software nobody designed — and it makes "nothing due today",
+  // which is good news, occupy more of the screen than the things that are.
   return (
     <div className="empty">
-      <div className="glyph">
-        <Icon name={icon} size={20} />
+      <Icon name={icon} size={15} />
+      <div>
+        <h3>{title}</h3>
+        {message ? <p>{message}</p> : null}
       </div>
-      <h3>{title}</h3>
-      {message ? <p>{message}</p> : null}
       {action}
     </div>
   )
@@ -301,6 +305,14 @@ export function Chip({
   return <span className={`chip${tone === 'neutral' ? '' : ' ' + tone}`}>{children}</span>
 }
 
+/**
+ * A headline figure.
+ *
+ * Three figures in three bordered boxes is the default shape of every dashboard
+ * ever generated, and the boxes do no work: the figures are already
+ * distinguished by being large numbers with labels. So they sit on the page,
+ * separated by a hairline, and only the number is allowed to be loud.
+ */
 export function StatCard({
   label,
   value,
@@ -316,36 +328,21 @@ export function StatCard({
 }): ReactNode {
   const body = (
     <>
-      <div style={{ color: 'var(--muted)', fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-        {label}
-      </div>
-      <div
-        className="num"
-        style={{
-          marginTop: 6,
-          fontSize: 23,
-          fontWeight: 660,
-          letterSpacing: '-0.02em',
-          color: tone ? `var(--${tone})` : 'var(--ink)'
-        }}
-      >
+      <div className="stat-label">{label}</div>
+      <div className="stat-value num" style={tone ? { color: `var(--${tone})` } : undefined}>
         {value}
       </div>
-      {detail ? <div style={{ marginTop: 4, color: 'var(--muted)', fontSize: 12 }}>{detail}</div> : null}
+      {detail ? <div className="stat-detail">{detail}</div> : null}
     </>
   )
   if (onClick) {
     return (
-      <button className="card" style={{ padding: '15px 16px', textAlign: 'left', width: '100%' }} onClick={onClick}>
+      <button className="stat interactive" onClick={onClick}>
         {body}
       </button>
     )
   }
-  return (
-    <div className="card" style={{ padding: '15px 16px' }}>
-      {body}
-    </div>
-  )
+  return <div className="stat">{body}</div>
 }
 
 /** A horizontal proportion bar. Used for budgets and progress. */
@@ -368,17 +365,9 @@ export function Meter({
       aria-valuemin={0}
       aria-valuemax={100}
       {...(label ? { 'aria-label': label } : {})}
-      style={{ height: 7, borderRadius: 999, background: 'var(--line)', overflow: 'hidden' }}
+      className={`meter tone-${tone}`}
     >
-      <div
-        style={{
-          width: `${Math.min(100, ratio * 100)}%`,
-          height: '100%',
-          borderRadius: 999,
-          background: `var(--${tone})`,
-          transition: 'width 0.3s ease'
-        }}
-      />
+      <div className="meter-fill" style={{ width: `${Math.min(100, ratio * 100)}%` }} />
     </div>
   )
 }

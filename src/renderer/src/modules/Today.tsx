@@ -513,9 +513,13 @@ function AttentionRow({
             {money(item.amountMinor, formatCtx, item.currency)}
           </span>
         ) : null}
-        <Chip tone={tone === 'bad' ? 'bad' : tone === 'warn' ? 'warn' : 'neutral'}>
+        {/* When something is due is a fact about the row, not a badge to be
+            awarded. A pill around every timestamp turns a readable list into a
+            row of stickers; type weight and one colour say the same thing more
+            quietly and read faster down a column. */}
+        <span className={`when ${tone === 'bad' ? 'overdue' : tone === 'warn' ? 'soon' : ''}`}>
           {item.daysAway === 0 ? 'Today' : relative(item.daysAway, formatCtx)}
-        </Chip>
+        </span>
       </button>
     </li>
   )

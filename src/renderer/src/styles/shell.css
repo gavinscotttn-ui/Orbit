@@ -289,38 +289,51 @@ kbd {
 .page-head .titles {
   min-width: 0;
 }
+/* The kicker names the section you are in. It is orientation, not emphasis,
+   so it is muted — an accent-coloured label above every page title is colour
+   spent on something nobody needed pointing out. */
 .page-head .kicker {
-  margin-bottom: 3px;
-  color: var(--accent);
-  font-size: 11px;
-  font-weight: 750;
-  letter-spacing: 0.11em;
+  margin-bottom: 4px;
+  color: var(--muted-2);
+  font-size: var(--t-label);
+  font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 .page-head h1 {
-  font-size: 25px;
-  letter-spacing: -0.026em;
+  font-size: var(--t-display);
+  font-weight: 660;
+  letter-spacing: -0.032em;
 }
 .page-head .sub {
-  margin-top: 4px;
+  margin-top: 5px;
   color: var(--muted);
-  font-size: 12.5px;
-  max-width: 70ch;
+  font-size: var(--t-dense);
+  max-width: 68ch;
 }
 
+/* A section heading is a small tracked label and a hairline, not a headline.
+   It separates without competing with the page title above it. */
 .section-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 14px;
-  margin: 26px 0 12px;
+  margin: 30px 0 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
 }
 .section-head h2 {
-  font-size: 15px;
+  font-size: var(--t-label);
+  font-weight: 700;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--muted);
 }
 .section-head .sub {
-  color: var(--muted);
-  font-size: 12px;
+  margin-top: 4px;
+  color: var(--muted-2);
+  font-size: var(--t-micro);
 }
 
 /* -- Overlays ---------------------------------------------------------------- */
