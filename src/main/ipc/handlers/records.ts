@@ -1,7 +1,7 @@
 import { dialog, BrowserWindow } from 'electron'
 import { basename } from 'node:path'
 import { z } from 'zod'
-import { ENTITIES, requireEntity } from '@shared/contracts/entities/index.js'
+import { ENTITIES, ENTITY_SECTIONS, requireEntity } from '@shared/contracts/entities/index.js'
 import { safeFileName } from '@shared/domain/ids.js'
 import { today } from '@shared/domain/time.js'
 import { nextFromCompletion, nextOccurrence, normaliseRule } from '@shared/domain/recurrence.js'
@@ -30,8 +30,11 @@ export function registerRecordHandlers(ctx: AppContext): void {
    * without touching the renderer.
    */
   handle('records.describe', z.object({ type: EntityType.optional() }), ({ type }) => {
-    if (type) return { entities: [requireEntity(type)] }
-    return { entities: ENTITIES }
+    if (type) return { entities: [requireEntity(type)], sections: ENTITY_SECTIONS }
+    // The sections travel with the descriptors rather than being imported by
+    // the renderer: importing them there would pull every descriptor body into
+    // the renderer bundle a second time, for three lists of names.
+    return { entities: ENTITIES, sections: ENTITY_SECTIONS }
   })
 
   handle('records.list', ListQuerySchema, ({ type, ...query }) => {

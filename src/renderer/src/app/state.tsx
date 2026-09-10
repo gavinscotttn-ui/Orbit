@@ -9,6 +9,7 @@ import {
   type ReactNode
 } from 'react'
 import type { EntityDescriptor } from '@shared/contracts/fields.js'
+import type { EntitySection } from '@shared/contracts/entities/index.js'
 import type { AppInfo } from '@shared/contracts/ipc.js'
 import type { RecentVaultEntry, VaultManifest } from '@shared/vault.js'
 import { call, callOr, onEvent } from '../lib/api.js'
@@ -83,6 +84,8 @@ interface AppState {
   settings: PortableSettings | null
   device: DevicePreferences | null
   entities: EntityDescriptor[]
+  /** Presentation-only grouping for record types with no life area. */
+  sections: EntitySection[]
   format: FormatContext
   toasts: Toast[]
   saveState: SaveState
@@ -119,6 +122,7 @@ export function AppProvider({ children }: { children: ReactNode }): ReactNode {
   const [settings, setSettingsState] = useState<PortableSettings | null>(null)
   const [device, setDeviceState] = useState<DevicePreferences | null>(null)
   const [entities, setEntities] = useState<EntityDescriptor[]>([])
+  const [sections, setSections] = useState<EntitySection[]>([])
   const [toasts, setToasts] = useState<Toast[]>([])
   const [saveState, setSaveState] = useState<SaveState>('idle')
   const [saveError, setSaveError] = useState('')
@@ -139,13 +143,17 @@ export function AppProvider({ children }: { children: ReactNode }): ReactNode {
     if (status.open) {
       const [prefs, described] = await Promise.all([
         call<PortableSettings>('settings.get', {}),
-        call<{ entities: EntityDescriptor[] }>('records.describe', {})
+        call<{ entities: EntityDescriptor[]; sections: EntitySection[] }>('records.describe', {})
       ])
       if (prefs.ok) setSettingsState(prefs.data)
-      if (described.ok) setEntities(described.data.entities)
+      if (described.ok) {
+        setEntities(described.data.entities)
+        setSections(described.data.sections ?? [])
+      }
     } else {
       setSettingsState(null)
       setEntities([])
+      setSections([])
     }
   }, [])
 
@@ -332,6 +340,7 @@ export function AppProvider({ children }: { children: ReactNode }): ReactNode {
       settings,
       device,
       entities,
+      sections,
       format,
       toasts,
       saveState,
@@ -355,6 +364,7 @@ export function AppProvider({ children }: { children: ReactNode }): ReactNode {
       settings,
       device,
       entities,
+      sections,
       format,
       toasts,
       saveState,

@@ -58,7 +58,7 @@ const MODULE_EXTRAS: Record<string, { type: string; label: string; where: Record
 }
 
 export function LifePage({ nav }: { nav: Navigator }): ReactNode {
-  const { entities, settings, revision } = useApp()
+  const { entities, sections, settings, revision } = useApp()
   const route = nav.route.page === 'life' ? nav.route : { page: 'life' as const }
   const [counts, setCounts] = useState<Record<string, number>>({})
 
@@ -178,11 +178,31 @@ export function LifePage({ nav }: { nav: Navigator }): ReactNode {
   }
 
   // The hub.
-  const byModule = new Map<string, EntityDescriptor[]>()
+  //
+  // Record types with a life area group under that area. The rest — the ones
+  // that cannot be switched off — group by what they are for, rather than all
+  // landing in one heap under the word "Core", which told the reader nothing
+  // and buried the four types they actually had records in.
+  const groups: { key: string; label: string; blurb: string; icon: IconName; list: EntityDescriptor[] }[] = []
+  const push = (key: string, label: string, blurb: string, icon: IconName, entity: EntityDescriptor): void => {
+    const existing = groups.find((g) => g.key === key)
+    if (existing) existing.list.push(entity)
+    else groups.push({ key, label, blurb, icon, list: [entity] })
+  }
   for (const entity of visible) {
-    const list = byModule.get(entity.module) ?? []
-    list.push(entity)
-    byModule.set(entity.module, list)
+    if (entity.module) {
+      const meta = MODULE_META[entity.module]
+      push(entity.module, meta?.label ?? entity.module, meta?.blurb ?? '', meta?.icon ?? 'grid', entity)
+      continue
+    }
+    const section = sections.find((candidate) => candidate.types.includes(entity.type))
+    push(
+      section?.key ?? 'core',
+      section?.label ?? 'Core',
+      section?.blurb ?? '',
+      section?.key === 'money' ? 'money' : section?.key === 'plan' ? 'plan' : 'grid',
+      entity
+    )
   }
 
   return (
@@ -192,8 +212,8 @@ export function LifePage({ nav }: { nav: Navigator }): ReactNode {
           <p className="kicker">Life</p>
           <h1>Everything Orbit keeps</h1>
           <p className="sub">
-            Only the areas you have switched on appear here. Turn more on whenever your life needs them, and off again
-            when it does not.
+            Every kind of record Orbit holds, and how many of each you have. Life areas can be switched on and off;
+            the rest are always here.
           </p>
         </div>
         <button className="btn" onClick={() => nav.go({ page: 'settings', section: 'modules' })}>
@@ -204,23 +224,28 @@ export function LifePage({ nav }: { nav: Navigator }): ReactNode {
 
       {Object.keys(counts).length === 0 && visible.length > 0 ? <Loading rows={4} label="Counting your records" /> : null}
 
-      {[...byModule.entries()].map(([module, list]) => {
-        const meta = MODULE_META[module]
+      {groups.map((group) => {
+        const held = group.list.reduce((total, entity) => total + (counts[entity.type] ?? 0), 0)
         return (
-          <section key={module || 'core'} style={{ marginBottom: 28 }}>
+          <section key={group.key} style={{ marginBottom: 28 }}>
             <div className="section-head">
               <div>
                 <h2>
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                    <Icon name={meta?.icon ?? 'grid'} size={16} />
-                    {meta?.label ?? module}
+                    <Icon name={group.icon} size={16} />
+                    {group.label}
                   </span>
                 </h2>
-                {meta?.blurb ? <p className="sub">{meta.blurb}</p> : null}
+                {group.blurb ? <p className="sub">{group.blurb}</p> : null}
               </div>
+              {held > 0 ? (
+                <span style={{ color: 'var(--muted)', fontSize: 12 }}>
+                  {held} record{held === 1 ? '' : 's'}
+                </span>
+              ) : null}
             </div>
             <div className="grid three">
-              {list.map((entity) => (
+              {group.list.map((entity) => (
                 <TypeCard key={entity.type} entity={entity} count={counts[entity.type] ?? 0} nav={nav} />
               ))}
             </div>
@@ -255,31 +280,21 @@ function TypeCard({
   count: number
   nav: Navigator
 }): ReactNode {
+  // An index of eighty record types is mostly empty for everybody, always. The
+  // tiles holding something are the ones worth seeing, so the empty ones step
+  // back rather than being hidden — they still have to be reachable, because
+  // reaching them is how they stop being empty.
   return (
     <button
-      className="card"
-      style={{ display: 'flex', gap: 12, padding: 15, textAlign: 'left', alignItems: 'flex-start' }}
+      className={`card type-card${count > 0 ? ' has-records' : ''}`}
       onClick={() => nav.go({ page: 'life', type: entity.type })}
     >
-      <span
-        style={{
-          display: 'grid',
-          placeItems: 'center',
-          width: 34,
-          height: 34,
-          flex: '0 0 auto',
-          borderRadius: 10,
-          background: 'var(--accent-soft)',
-          color: 'var(--accent)'
-        }}
-      >
+      <span className="type-icon">
         <Icon name={iconForEntity(entity.icon)} size={16} />
       </span>
       <span style={{ flex: 1, minWidth: 0 }}>
-        <b style={{ display: 'block', fontSize: 13.5, marginBottom: 2 }}>{entity.plural}</b>
-        <small style={{ color: 'var(--muted)', fontSize: 11.5, lineHeight: 1.5, display: 'block' }}>
-          {count > 0 ? `${count} record${count === 1 ? '' : 's'}` : 'None yet'}
-        </small>
+        <b>{entity.plural}</b>
+        <small>{count > 0 ? `${count} record${count === 1 ? '' : 's'}` : 'None yet'}</small>
       </span>
     </button>
   )
