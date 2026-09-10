@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
+import type { AttentionItem } from '@shared/contracts/ipc.js'
 import { call } from '../lib/api.js'
 import { useApp } from '../app/state.js'
 import { date as fmtDate, money, moneyCompact, relative, time as fmtTime } from '../lib/format.js'
@@ -20,21 +21,6 @@ import type { Navigator } from '../app/App.js'
  * background service on your computer, so a reminder for Tuesday is seen when
  * you next open it, not while it is closed.
  */
-
-interface AttentionItem {
-  id: string
-  severity: 'overdue' | 'today' | 'soon' | 'upcoming' | 'info'
-  daysAway: number
-  date: string | null
-  title: string
-  detail: string
-  entityType: string
-  entityId: string
-  module: string
-  action?: string
-  amountMinor?: number
-  currency?: string
-}
 
 interface Brief {
   date: string

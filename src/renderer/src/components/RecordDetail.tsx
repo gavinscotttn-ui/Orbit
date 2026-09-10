@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { EntityDescriptor, FieldSpec } from '@shared/contracts/fields.js'
+import type { AttentionItem } from '@shared/contracts/ipc.js'
 import { call, pathForDroppedFile } from '../lib/api.js'
 import { useApp } from '../app/state.js'
-import { bytes as fmtBytes, date as fmtDate, dayAndRelative, money, humanise, time as fmtTime } from '../lib/format.js'
+import { bytes as fmtBytes, date as fmtDate, dayAndRelative, money, humanise, relative, time as fmtTime } from '../lib/format.js'
 import { describeRule, normaliseRule } from '@shared/domain/recurrence.js'
 import { Icon, iconForEntity, type IconName } from './Icon.js'
 import { Chip, EmptyState, ErrorState, Loading, Modal, Notice, useConfirm } from './ui.js'
@@ -249,7 +250,7 @@ export function RecordDetail({
             {!data ? (
               <Loading rows={6} label="Loading the record" />
             ) : tab === 'overview' ? (
-              <Overview data={data} formatCtx={format} />
+              <Overview data={data} formatCtx={format} onNavigate={onNavigate} onSeeAll={() => setTab('related')} />
             ) : tab === 'related' ? (
               <Related data={data} onNavigate={onNavigate} />
             ) : tab === 'files' ? (
@@ -304,7 +305,17 @@ function SubtitleLine({ data }: { data: DetailPayload }): ReactNode {
   return <p className="sub">{bits.join(' · ')}</p>
 }
 
-function Overview({ data, formatCtx }: { data: DetailPayload; formatCtx: Parameters<typeof money>[1] }): ReactNode {
+function Overview({
+  data,
+  formatCtx,
+  onNavigate,
+  onSeeAll
+}: {
+  data: DetailPayload
+  formatCtx: Parameters<typeof money>[1]
+  onNavigate?: (type: string, id: string) => void
+  onSeeAll: () => void
+}): ReactNode {
   const { entities } = useApp()
   const [refLabels, setRefLabels] = useState<Record<string, string>>({})
 
@@ -331,6 +342,28 @@ function Overview({ data, formatCtx }: { data: DetailPayload; formatCtx: Paramet
     }
   }, [data, entities])
 
+  /**
+   * A record's connections are the point of the thing, so a few of them belong
+   * on the overview rather than entirely behind a tab. One per kind, so a car
+   * with nine fuel logs does not bury its insurance policy — the tab has the
+   * full list.
+   */
+  // Every call site of iconForEntity passes a descriptor's declared icon, not
+  // an entity type; passing the type silently lands on the generic fallback.
+  const iconFor = useCallback(
+    (type: string): IconName => {
+      const descriptor = entities.find((e) => e.type === type)
+      return descriptor ? iconForEntity(descriptor.icon) : 'grid'
+    },
+    [entities]
+  )
+
+  const relatedPreview = useMemo(() => {
+    const perKind = new Map<string, DetailPayload['related'][number]>()
+    for (const link of data.related) if (!perKind.has(link.type)) perKind.set(link.type, link)
+    return [...perKind.values()].slice(0, 6)
+  }, [data.related])
+
   const groups = useMemo(() => {
     const shown = data.entity.fields.filter((field) => {
       const value = data.record[field.name]
@@ -348,11 +381,50 @@ function Overview({ data, formatCtx }: { data: DetailPayload; formatCtx: Paramet
 
   return (
     <div style={{ display: 'grid', gap: 18 }}>
+      <Deadlines type={data.entity.type} id={String(data.record.id)} />
+
       {data.tags.length > 0 ? (
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           {data.tags.map((tag) => (
             <Chip key={tag.id}>{tag.name}</Chip>
           ))}
+        </div>
+      ) : null}
+
+      {relatedPreview.length > 0 ? (
+        <div>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 9 }}>
+            <h4
+              style={{
+                color: 'var(--muted)',
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase'
+              }}
+            >
+              What this connects to
+            </h4>
+            {data.related.length > relatedPreview.length ? (
+              <button className="btn small ghost" onClick={onSeeAll}>
+                All {data.related.length}
+              </button>
+            ) : null}
+          </div>
+          <div style={{ display: 'grid', gap: 6 }}>
+            {relatedPreview.map((link) => (
+              <button
+                key={`${link.type}:${link.id}`}
+                className="related-row"
+                onClick={() => onNavigate?.(link.type, link.id)}
+                disabled={!onNavigate}
+              >
+                <Icon name={iconFor(link.type)} size={14} />
+                <span className="related-title">{link.title}</span>
+                <span className="related-kind">{link.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
       ) : null}
 
@@ -871,4 +943,59 @@ function safeJson(text: string): Record<string, unknown> | null {
   } catch {
     return null
   }
+}
+
+
+/**
+ * What this record wants doing about it.
+ *
+ * Everything Orbit knows about a record's dates, in one strip at the top of the
+ * overview: its MOT, its renewal, the warranty running out, the service due.
+ * These come from the same engine that fills Today, narrowed to this record and
+ * the records linked to it — so a car shows the MOT that is stored on its
+ * maintenance schedule rather than only the fields typed onto the car.
+ *
+ * It renders nothing at all when there is nothing to say, which is the point:
+ * a heading over an empty box is worse than no heading.
+ */
+function Deadlines({ type, id }: { type: string; id: string }): ReactNode {
+  const { format } = useApp()
+  const [items, setItems] = useState<AttentionItem[]>([])
+
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      const result = await call<{ items: AttentionItem[] }>('records.attention', { type, id })
+      if (!cancelled) setItems(result.ok ? result.data.items : [])
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [type, id])
+
+  if (items.length === 0) return null
+
+  const tone = (severity: string): 'bad' | 'warn' | 'info' =>
+    severity === 'overdue' ? 'bad' : severity === 'today' || severity === 'soon' ? 'warn' : 'info'
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: 8,
+        paddingBottom: 4
+      }}
+    >
+      {items.slice(0, 6).map((item) => (
+        <span key={item.id} className={`deadline-chip ${tone(item.severity)}`}>
+          <b>{item.title}</b>
+          <span>
+            {relative(item.daysAway, format)}
+            {item.laterOccurrences ? ` · ${item.laterOccurrences} more after that` : ''}
+          </span>
+        </span>
+      ))}
+    </div>
+  )
 }

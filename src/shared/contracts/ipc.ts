@@ -52,6 +52,7 @@ export const IPC_CHANNELS = [
   'records.link',
   'records.unlink',
   'records.related',
+  'records.attention',
   'records.history',
   'records.describe',
   'records.counts',
@@ -147,4 +148,38 @@ export interface AppInfo {
    * requests at all: the main process blocks every one at the session level.
    */
   networkEnabled: boolean
+}
+
+/**
+ * One thing wanting the user's attention.
+ *
+ * Declared here, in the contract both sides import, because it crosses the IPC
+ * boundary in three different messages (`today.brief`, `reminders.due` and
+ * `records.attention`). Two hand-kept copies of a shape that travels between
+ * processes is how a renderer quietly starts reading a field the main process
+ * stopped sending.
+ */
+export type AttentionSeverity = 'overdue' | 'today' | 'soon' | 'upcoming' | 'info'
+
+export interface AttentionItem {
+  id: string
+  severity: AttentionSeverity
+  /** How many days until it happens. Negative means it has already passed. */
+  daysAway: number
+  /** A floating calendar date, or null for something with no date of its own. */
+  date: string | null
+  title: string
+  detail: string
+  entityType: string
+  entityId: string
+  module: string
+  /** What the user should do about it, as a verb. */
+  action?: string
+  amountMinor?: number
+  currency?: string
+  /**
+   * Set only by `records.attention`, which keeps the soonest occurrence of a
+   * repeating item: how many further occurrences were folded away behind it.
+   */
+  laterOccurrences?: number
 }

@@ -5,7 +5,8 @@ import { join } from 'node:path'
 import { VaultManager } from '../../src/main/vault/manager.js'
 import { Repository } from '../../src/main/db/repository.js'
 import { SettingsService } from '../../src/main/services/settings.js'
-import { RemindersService, nextAnniversary } from '../../src/main/services/reminders.js'
+import { RemindersService, nearestPerThing, nextAnniversary } from '../../src/main/services/reminders.js'
+import type { AttentionItem } from '../../src/shared/contracts/ipc.js'
 import { addDays, today } from '../../src/shared/domain/time.js'
 
 /**
@@ -379,5 +380,66 @@ describe('robustness', () => {
     })
     // An empty cadence falls back to monthly rather than throwing.
     expect(() => reminders.attention({ today: now })).not.toThrow()
+  })
+})
+
+describe('nearestPerThing', () => {
+  const item = (overrides: Partial<AttentionItem>): AttentionItem => ({
+    id: 'x',
+    severity: 'upcoming',
+    daysAway: 10,
+    date: addDays(now, 10),
+    title: 'Vehicle tax',
+    detail: '',
+    entityType: 'bill',
+    entityId: 'bill-1',
+    module: 'money',
+    ...overrides
+  })
+
+  it('keeps one row per thing and counts what it folded away', () => {
+    // A monthly bill produces an item per occurrence. Against one record that
+    // is the same answer printed twelve times.
+    const items = Array.from({ length: 12 }, (_, i) =>
+      item({ id: `bill-1:${i}`, daysAway: 21 + i * 30 })
+    )
+    const collapsed = nearestPerThing(items)
+    expect(collapsed).toHaveLength(1)
+    expect(collapsed[0]?.daysAway).toBe(21)
+    expect(collapsed[0]?.laterOccurrences).toBe(11)
+  })
+
+  it('keeps genuinely different things apart', () => {
+    const collapsed = nearestPerThing([
+      item({ id: 'a', title: 'Vehicle tax', entityId: 'bill-1', daysAway: 21 }),
+      item({ id: 'b', title: 'MOT test', entityType: 'maintenance_schedule', entityId: 'sched-1', daysAway: 24 }),
+      item({ id: 'c', title: 'Car insurance', entityType: 'insurance_policy', entityId: 'pol-1', daysAway: 240 })
+    ])
+    expect(collapsed.map((c) => c.title)).toEqual(['Vehicle tax', 'MOT test', 'Car insurance'])
+    expect(collapsed.every((c) => c.laterOccurrences === 0)).toBe(true)
+  })
+
+  it('keeps the soonest even when the input is out of order', () => {
+    const collapsed = nearestPerThing([
+      item({ id: 'later', daysAway: 200 }),
+      item({ id: 'soonest', daysAway: -4, severity: 'overdue' }),
+      item({ id: 'middle', daysAway: 30 })
+    ])
+    expect(collapsed[0]?.daysAway).toBe(-4)
+    expect(collapsed[0]?.severity).toBe('overdue')
+    expect(collapsed[0]?.laterOccurrences).toBe(2)
+  })
+
+  it('does not merge two different records that happen to share a title', () => {
+    // Two cars, both with an "MOT test". Folding them together would hide one.
+    const collapsed = nearestPerThing([
+      item({ id: 'a', title: 'MOT test', entityId: 'sched-1', daysAway: 24 }),
+      item({ id: 'b', title: 'MOT test', entityId: 'sched-2', daysAway: 90 })
+    ])
+    expect(collapsed).toHaveLength(2)
+  })
+
+  it('returns nothing for nothing', () => {
+    expect(nearestPerThing([])).toEqual([])
   })
 })

@@ -606,3 +606,84 @@ textarea:disabled {
 .notice.info strong {
   color: inherit;
 }
+
+/*
+ * Deadline chips on a record's overview.
+ *
+ * Two lines in a small pill: what it is, and when. They are the first thing on
+ * the screen when you open a car or a policy, because "when is the MOT" is the
+ * question that made you open it.
+ */
+.deadline-chip {
+  display: inline-grid;
+  gap: 1px;
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-left-width: 3px;
+  border-radius: var(--radius-s);
+  background: var(--panel-2);
+  line-height: 1.35;
+}
+.deadline-chip b {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.deadline-chip span {
+  color: var(--muted);
+  font-size: 11.5px;
+  font-variant-numeric: var(--num);
+}
+.deadline-chip.bad {
+  border-left-color: var(--bad);
+  background: var(--bad-soft);
+}
+.deadline-chip.bad b {
+  color: var(--bad);
+}
+.deadline-chip.warn {
+  border-left-color: var(--warn);
+  background: var(--warn-soft);
+}
+.deadline-chip.warn b {
+  color: var(--warn);
+}
+.deadline-chip.info {
+  border-left-color: var(--line-strong);
+}
+
+/* One connected record, on the overview. Reads as a row, behaves as a link. */
+.related-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 8px 11px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  background: var(--panel-2);
+  color: var(--ink-2);
+  font-size: 12.5px;
+  text-align: left;
+  transition: border-color 0.12s, background 0.12s;
+}
+.related-row:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--panel);
+}
+.related-row:disabled {
+  cursor: default;
+}
+.related-row .related-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 550;
+  color: var(--ink);
+}
+.related-row .related-kind {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 11px;
+}

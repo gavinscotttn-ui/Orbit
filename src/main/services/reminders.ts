@@ -1,6 +1,7 @@
 import { addDays, today as todayDate, daysBetween, type CalendarDate } from '@shared/domain/time.js'
 import { normaliseRule, nextOccurrence } from '@shared/domain/recurrence.js'
 import { billOccurrences } from '@shared/domain/finance.js'
+import type { AttentionItem, AttentionSeverity } from '@shared/contracts/ipc.js'
 import type { OrbitDatabase } from '../db/database.js'
 import type { Repository } from '../db/repository.js'
 import type { SettingsService } from './settings.js'
@@ -21,25 +22,6 @@ import { log } from './../log.js'
  * on the user's computer, so a reminder for Tuesday is seen when Orbit is next
  * opened, not while it is closed.
  */
-
-export type AttentionSeverity = 'overdue' | 'today' | 'soon' | 'upcoming' | 'info'
-
-export interface AttentionItem {
-  id: string
-  severity: AttentionSeverity
-  /** How many days until it happens. Negative means it has already passed. */
-  daysAway: number
-  date: CalendarDate | null
-  title: string
-  detail: string
-  entityType: string
-  entityId: string
-  module: string
-  /** What the user should do about it, as a verb. */
-  action?: string
-  amountMinor?: number
-  currency?: string
-}
 
 interface SourceRow {
   id: string
@@ -617,4 +599,25 @@ export function nextAnniversary(originalDate: string, from: CalendarDate): Calen
   const thisYear = fix(candidate)
   if (thisYear >= from) return thisYear
   return fix(`${year + 1}-${monthDay}`)
+}
+
+/**
+ * Keep only the soonest occurrence of each repeating thing.
+ *
+ * A recurring bill produces one attention item per future occurrence. On Today
+ * that is a forward list and reads correctly. Against a single record it is the
+ * same answer printed five times — "when is the vehicle tax due" has one
+ * answer, the next one — so the rest are folded away and counted.
+ */
+export function nearestPerThing(
+  items: AttentionItem[]
+): (AttentionItem & { laterOccurrences: number })[] {
+  const seen = new Map<string, AttentionItem & { laterOccurrences: number }>()
+  for (const item of [...items].sort((a, b) => a.daysAway - b.daysAway)) {
+    const key = `${item.entityType}:${item.entityId}:${item.title}`
+    const existing = seen.get(key)
+    if (existing) existing.laterOccurrences += 1
+    else seen.set(key, { ...item, laterOccurrences: 0 })
+  }
+  return [...seen.values()].sort((a, b) => a.daysAway - b.daysAway)
 }

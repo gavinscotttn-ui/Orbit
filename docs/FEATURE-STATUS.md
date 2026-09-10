@@ -316,6 +316,7 @@ inside a personal-admin app would be irresponsible.
 | --- | --- | --- |
 | Audit and change history | **Done** | Every create, update and delete, with a before-snapshot. |
 | Restore earlier information | **Done** | Undo a delete, or restore an earlier version of a record. |
+| Deadlines shown on the record itself | **Done** | Opening a car answers "when is the MOT" without a second click. Derived from the same engine that fills Today, narrowed to the record and the records linked to it, with repeating items collapsed to their next occurrence. |
 | Selected sharing with partners or carers | **Not built** | |
 | Record-level or space-level permissions | **Not built** | |
 | Conflict handling for synchronisation | **Not built** | |
@@ -360,8 +361,8 @@ session extension available.
 
 | | |
 | --- | --- |
-| Unit and integration tests | **183 passing** |
-| End-to-end checks against the running application | **55 passing** |
+| Unit and integration tests | **188 passing** |
+| End-to-end checks against the running application | **58 passing** |
 | Platforms actually tested | **Linux only** — see below |
 
 **What has not been tested, and this matters.** All development and testing was

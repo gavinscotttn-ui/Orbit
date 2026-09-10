@@ -473,6 +473,24 @@ try {
       await firstRecord.click()
       await page.waitForTimeout(1400)
       await shot('14-demo-vehicle-detail')
+
+      // Opening a car should answer "when is the MOT" without another click.
+      // Those dates live on maintenance schedules that point at the car, not on
+      // the car, so this also proves the link walk works.
+      const deadlines = await page.locator('.deadline-chip').allTextContents()
+      check(
+        'the car shows its deadlines on the overview',
+        deadlines.some((text) => /MOT/i.test(text)),
+        deadlines.join(' | ')
+      )
+      // A monthly bill must appear once, not once per future occurrence.
+      const taxChips = deadlines.filter((text) => /Vehicle tax/i.test(text))
+      check('a repeating bill is shown once, not once per occurrence', taxChips.length === 1, String(taxChips.length))
+      check(
+        'the connected records are on the overview, not only behind a tab',
+        (await page.locator('.related-row').count()) > 0
+      )
+
       const costsTab = page.locator('[role="tab"]:has-text("Costs")')
       if ((await costsTab.count()) > 0) {
         await costsTab.click()

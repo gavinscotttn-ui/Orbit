@@ -7,6 +7,7 @@ import { today } from '@shared/domain/time.js'
 import { nextFromCompletion, nextOccurrence, normaliseRule } from '@shared/domain/recurrence.js'
 import type { AppContext } from '../../context.js'
 import { broadcast, EntityType, FsPath, Empty, handle, RecordData, RecordId } from '../router.js'
+import { nearestPerThing } from '../../services/reminders.js'
 import { log } from '../../log.js'
 
 const ListQuerySchema = z.object({
@@ -153,6 +154,26 @@ export function registerRecordHandlers(ctx: AppContext): void {
       })
       .filter((x): x is NonNullable<typeof x> => x !== null)
     return { links: resolved }
+  })
+
+  /**
+   * What this record wants doing about it, and when.
+   *
+   * The attention engine already works all of this out for Today; this asks it
+   * the same question narrowed to one record. The subtlety is that a car's MOT
+   * is not stored on the car — it is a maintenance schedule that points at it —
+   * so the record's own links are walked one step and anything hanging off them
+   * counts too. That is why opening a vehicle shows its MOT and its insurance
+   * renewal rather than only the fields typed into the vehicle itself.
+   */
+  handle('records.attention', z.object({ type: EntityType, id: RecordId, horizonDays: z.number().int().min(1).max(730).optional() }), ({ type, id, horizonDays }) => {
+    const { repository, reminders } = ctx.require()
+    const own = new Set<string>([`${type}:${id}`])
+    for (const link of repository.linkedRecords(type, id)) own.add(`${link.type}:${link.id}`)
+    const relevant = reminders
+      .attention({ horizonDays: horizonDays ?? 365 })
+      .filter((item) => own.has(`${item.entityType}:${item.entityId}`))
+    return { items: nearestPerThing(relevant) }
   })
 
   handle('records.history', z.object({ type: EntityType, id: RecordId, limit: z.number().int().min(1).max(200).optional() }), ({ type, id, limit }) => {
