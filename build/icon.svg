@@ -4,40 +4,38 @@
 
     Source of truth for build/icon.png, which electron-builder turns into the
     .icns and .ico it needs. Regenerate with: npm run icon
+
+    The mark is the same geometry as the one in the interface
+    (src/renderer/src/components/Brand.tsx), scaled 8x from its 128 grid: a
+    solid letter O with one body orbiting it, punched out of the ring. Flat,
+    because gloss and bevels are what make an icon read as an emoji.
   -->
   <defs>
     <linearGradient id="tile" x1="0.1" y1="0" x2="0.9" y2="1">
-      <stop offset="0%" stop-color="#1c2b4a"/>
-      <stop offset="55%" stop-color="#101a2e"/>
-      <stop offset="100%" stop-color="#070c17"/>
-    </linearGradient>
-    <linearGradient id="planet" x1="0.15" y1="0" x2="0.7" y2="1">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="30%" stop-color="#eff5fe"/>
-      <stop offset="58%" stop-color="#c2d4ee"/>
-      <stop offset="100%" stop-color="#6d8fc6"/>
-    </linearGradient>
-    <linearGradient id="band" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#16213c"/>
-      <stop offset="22%" stop-color="#3f5f9c"/>
-      <stop offset="46%" stop-color="#c2d4ee"/>
-      <stop offset="68%" stop-color="#ffffff"/>
-      <stop offset="100%" stop-color="#8fabd8"/>
+      <stop offset="0%" stop-color="#1d2c4b"/>
+      <stop offset="55%" stop-color="#121c30"/>
+      <stop offset="100%" stop-color="#080d18"/>
     </linearGradient>
     <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.22"/>
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.20"/>
       <stop offset="45%" stop-color="#ffffff" stop-opacity="0.03"/>
       <stop offset="100%" stop-color="#000000" stop-opacity="0.18"/>
     </linearGradient>
+    <mask id="body" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <rect width="1024" height="1024" fill="#fff"/>
+      <circle cx="795.06" cy="228.94" r="208" fill="#000"/>
+    </mask>
   </defs>
 
   <rect width="1024" height="1024" rx="228" fill="url(#tile)"/>
   <rect x="3" y="3" width="1018" height="1018" rx="225" fill="none" stroke="url(#rim)" stroke-width="6"/>
 
-  <g transform="translate(512 512) scale(3.05)">
-    <circle r="72" fill="none" stroke="url(#planet)" stroke-width="13"/>
-    <g transform="rotate(-20)">
-      <ellipse rx="124" ry="33" fill="none" stroke="url(#band)" stroke-width="13"/>
-    </g>
+  <!-- Ring: outer r=400, counter r=248, on a 512 centre, then scaled back so
+       the orbiting body clears the tile's rounded corner. -->
+  <g transform="translate(512 512) scale(0.87) translate(-512 -512)">
+    <path mask="url(#body)" fill-rule="evenodd" fill="#eef3fb"
+      d="M 112 512 A 400 400 0 1 0 912 512 A 400 400 0 1 0 112 512 Z
+         M 264 512 A 248 248 0 1 0 760 512 A 248 248 0 1 0 264 512 Z"/>
+    <circle cx="795.06" cy="228.94" r="144" fill="#7ea6ec"/>
   </g>
 </svg>

@@ -22,15 +22,11 @@
   --accent-ink: #ffffff;
   --silver: #c6d3e8;
 
-  /* The mark's chrome ramp. Named separately from the accent because the logo
-     is a fixed object with its own colours, not a themeable accent. Pale
-     grounds need a darker ramp or the highlight disappears into the page. */
-  --mark-1: #c3d8f2;
-  --mark-2: #94b4e0;
-  --mark-3: #5b83bd;
-  --mark-4: #22406f;
-  --mark-shadow: #0d1728;
-  --mark-shadow-2: #274a80;
+  /* The mark: two flat colours, the ring and the body. Named separately from
+     the accent because the logo is a fixed object with its own colours rather
+     than a themeable one. */
+  --mark-ink: #18233a;
+  --mark-body: #3a6bc4;
 
   /* Surfaces */
   --bg: #f3f5f9;
@@ -107,13 +103,8 @@
   --accent-ink: #06101f;
   --silver: #9fb3d1;
 
-  /* On a dark ground the ramp runs bright, the way the mark was drawn. */
-  --mark-1: #ffffff;
-  --mark-2: #eff5fe;
-  --mark-3: #c2d4ee;
-  --mark-4: #6d8fc6;
-  --mark-shadow: #16213c;
-  --mark-shadow-2: #3f5f9c;
+  --mark-ink: #eef3fb;
+  --mark-body: #7ea6ec;
 
   --bg: #0d1017;
   --panel: #151922;
@@ -171,21 +162,24 @@
  * it. The sidebar is dark in both themes, so its mark is always the bright
  * ramp; a printed or pale panel gets the dark one.
  */
-.orbit-mark.tone-light {
-  --mark-1: #ffffff;
-  --mark-2: #eff5fe;
-  --mark-3: #c2d4ee;
-  --mark-4: #6d8fc6;
-  --mark-shadow: #16213c;
-  --mark-shadow-2: #3f5f9c;
+/* The tone is a property of the surface the logo sits on, so it is declared on
+   whichever element carries the class — the lockup when there is a wordmark
+   beside the mark, which then inherits it. Declaring it only on the <svg>
+   scoped the colours to the mark and left the word to pick up the page theme,
+   which on the sidebar meant navy text on a navy panel. */
+.orbit-mark.tone-light,
+.orbit-lockup.tone-light {
+  --mark-ink: #eef3fb;
+  --mark-body: #7ea6ec;
 }
-.orbit-mark.tone-dark {
-  --mark-1: #c3d8f2;
-  --mark-2: #94b4e0;
-  --mark-3: #5b83bd;
-  --mark-4: #22406f;
-  --mark-shadow: #0d1728;
-  --mark-shadow-2: #274a80;
+.orbit-mark.tone-dark,
+.orbit-lockup.tone-dark {
+  --mark-ink: #18233a;
+  --mark-body: #3a6bc4;
+}
+/* One colour throughout, where the accent cannot be carried. */
+.orbit-mark.mono {
+  --mark-body: var(--mark-ink);
 }
 
 .orbit-lockup {
@@ -200,18 +194,13 @@
 }
 .orbit-lockup .lockup-text b {
   display: block;
-  font-weight: 650;
+  font-weight: 640;
   /* Wide tracking is the wordmark's defining feature; it is what keeps the
-     letters reading as the logo rather than as a heading. */
-  letter-spacing: 0.22em;
-  text-indent: 0.22em;
-  background-image: linear-gradient(178deg, var(--mark-1) 8%, var(--mark-2) 34%, var(--mark-3) 68%, var(--mark-4) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-.orbit-lockup.tone-light .lockup-text b {
-  background-image: linear-gradient(178deg, #ffffff 8%, #eff5fe 34%, #c2d4ee 68%, #8fabd8 100%);
+     letters reading as the logo rather than as a heading. Flat colour: the
+     gradient it used to carry was the same mistake as the gloss on the mark. */
+  letter-spacing: 0.24em;
+  text-indent: 0.24em;
+  color: var(--mark-ink);
 }
 .orbit-lockup .lockup-text small {
   display: block;

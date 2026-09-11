@@ -3,75 +3,90 @@ import type { ReactNode } from 'react'
 /**
  * The Orbit mark.
  *
- * A chrome ringed planet: the planet drawn as an annulus, the ring as a band
- * whose far edge falls into deep navy and whose near sweep catches the light.
- * It is vector, so it stays crisp at 18px in the sidebar and at 1024px as the
- * application icon, and it carries no external file — nothing to fail to load
- * in an application that refuses to make network requests.
+ * A solid letter O — the first letter of the wordmark, not a picture of
+ * anything — with a single body orbiting it, punched cleanly out of the ring.
  *
- * The gradient stops are CSS custom properties, so the mark is genuinely
- * theme-aware rather than a light-mode PNG dropped onto a dark sidebar. The
- * `tone` prop pins it when the surrounding surface does not match the theme —
- * the sidebar is dark in both themes, so the sidebar mark is always 'light'
- * (that is, drawn for a dark ground).
+ * Three shapes were tried and rejected by looking at them at the size they
+ * actually have to work, which is 18px in the sidebar:
  *
- * Gradient ids are suffixed per instance: two marks on one page with the same
- * id would make the second borrow the first one's colours.
+ *   a ringed planet   reads as the emoji, and is mush below about 32px
+ *   a broken ring     reads as a loading spinner, at every size
+ *   a tilted ellipse  reads as an eye, which is a poor thing for an
+ *                     application whose main promise is privacy
+ *
+ * The notch around the body is a real hole in the geometry rather than a
+ * stroke painted in the background colour, so the mark composites correctly on
+ * any surface — a sidebar, a tinted panel, a printed page — rather than only on the
+ * one background it was drawn against.
+ *
+ * It is flat on purpose. Gloss, bevels and chrome gradients are what make a
+ * mark read as an emoji; the form has to carry it.
+ *
+ * Mask ids are per instance: two marks on one page sharing an id would make
+ * the second borrow the first one's hole.
  */
+
+const OUTER = 50
+const INNER = 31
+const BODY = 18
+const CLEAR = 8
+const ANGLE = 45
+
+const rad = (ANGLE * Math.PI) / 180
+const BX = Number((64 + OUTER * Math.sin(rad)).toFixed(2))
+const BY = Number((64 - OUTER * Math.cos(rad)).toFixed(2))
+
+/** A ring drawn as two half-arcs; one arc returning to its own start is undefined. */
+const ring = (r: number): string =>
+  `M ${64 - r} 64 A ${r} ${r} 0 1 0 ${64 + r} 64 A ${r} ${r} 0 1 0 ${64 - r} 64 Z`
 
 let seq = 0
 
 export function OrbitMark({
   size = 24,
   tone = 'auto',
+  mono = false,
   title
 }: {
   size?: number
   /** 'auto' follows the theme; 'light' is drawn for a dark ground, 'dark' for a pale one. */
   tone?: 'auto' | 'light' | 'dark'
+  /** One colour throughout, for places that cannot carry the accent. */
+  mono?: boolean
   title?: string
 }): ReactNode {
-  const id = `orbit-mark-${++seq}`
-  const planet = `${id}-p`
-  const band = `${id}-b`
+  const maskId = `orbit-mark-${++seq}`
   return (
     <svg
-      viewBox="0 0 256 256"
+      viewBox="0 0 128 128"
       width={size}
       height={size}
-      className={`orbit-mark tone-${tone}`}
+      className={`orbit-mark tone-${tone}${mono ? ' mono' : ''}`}
       role={title ? 'img' : 'presentation'}
       {...(title ? { 'aria-label': title } : { 'aria-hidden': true })}
       focusable="false"
     >
-      <defs>
-        <linearGradient id={planet} x1="0.15" y1="0" x2="0.7" y2="1">
-          <stop offset="0%" stopColor="var(--mark-1)" />
-          <stop offset="30%" stopColor="var(--mark-2)" />
-          <stop offset="58%" stopColor="var(--mark-3)" />
-          <stop offset="100%" stopColor="var(--mark-4)" />
-        </linearGradient>
-        <linearGradient id={band} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="var(--mark-shadow)" />
-          <stop offset="22%" stopColor="var(--mark-shadow-2)" />
-          <stop offset="46%" stopColor="var(--mark-3)" />
-          <stop offset="68%" stopColor="var(--mark-1)" />
-          <stop offset="100%" stopColor="var(--mark-4)" />
-        </linearGradient>
-      </defs>
-      <g transform="translate(128 128)">
-        <circle r="72" fill="none" stroke={`url(#${planet})`} strokeWidth="13" />
-        <g transform="rotate(-20)">
-          <ellipse rx="124" ry="33" fill="none" stroke={`url(#${band})`} strokeWidth="13" />
-        </g>
-      </g>
+      <mask id={maskId} maskUnits="userSpaceOnUse" x="0" y="0" width="128" height="128">
+        <rect width="128" height="128" fill="#fff" />
+        <circle cx={BX} cy={BY} r={BODY + CLEAR} fill="#000" />
+      </mask>
+      <path
+        mask={`url(#${maskId})`}
+        fillRule="evenodd"
+        fill="var(--mark-ink)"
+        d={`${ring(OUTER)} ${ring(INNER)}`}
+      />
+      <circle cx={BX} cy={BY} r={BODY} fill="var(--mark-body)" />
     </svg>
   )
 }
 
 /**
- * Mark plus wordmark. The word is set in the interface face, tracked wide and
- * filled with the same chrome ramp as the mark, so the two read as one object.
+ * Mark plus wordmark.
+ *
+ * The word is tracked wide — that spacing is the wordmark's whole character —
+ * and set flat in a single colour. The gradient it used to carry was the same
+ * mistake as the gloss on the old mark.
  */
 export function OrbitLockup({
   size = 22,
@@ -84,7 +99,7 @@ export function OrbitLockup({
 }): ReactNode {
   return (
     <span className={`orbit-lockup tone-${tone}`}>
-      <OrbitMark size={size * 1.55} tone={tone} title="Orbit" />
+      <OrbitMark size={size * 1.5} tone={tone} title="Orbit" />
       <span className="lockup-text">
         <b style={{ fontSize: size }}>ORBIT</b>
         {subtitle ? <small>{subtitle}</small> : null}

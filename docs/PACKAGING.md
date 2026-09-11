@@ -138,13 +138,34 @@ match Playwright's expected revision, point at it:
 CHROMIUM_PATH=/path/to/chrome npm run icon
 ```
 
-**The mark is a reconstruction, not the original artwork.** It was rebuilt as
-vector from the supplied logo — a chrome ringed planet, drawn as an annulus
-with a banded ring whose far edge falls into navy. To use the original instead,
-replace `build/icon.png` with a square PNG of at least 512×512 (1024 preferred)
-and skip `npm run icon`; nothing else needs to change. The in-application mark
-is separate and lives in
-[`src/renderer/src/components/Brand.tsx`](../src/renderer/src/components/Brand.tsx).
+### About the mark
+
+**This is a redesign, not the supplied artwork.** The logo originally provided
+was a chrome ringed planet. Reproduced faithfully it read as the 🪐 emoji, and
+below about 32px it turned to mush — so the mark was redrawn from scratch:
+
+* **A solid letter O** — the first letter of the wordmark, rather than a picture
+  of anything — **with one body orbiting it**, punched cleanly out of the ring.
+* **Flat.** Gloss, bevels and chrome gradients are what make a mark read as an
+  emoji. The form has to carry it.
+* The notch around the body is **a real hole in the geometry**, not a stroke
+  painted in the background colour, so the mark composites correctly on any
+  surface rather than only the one it was drawn against.
+
+Three other shapes were drawn and rejected by rendering them at the size they
+actually have to work at — 18px in the sidebar:
+
+| Shape | Why not |
+| --- | --- |
+| Ringed planet | The emoji. Illegible small. |
+| Ring with a gap and a dot | Reads as a loading spinner, at every size |
+| Tilted ellipse with a centre dot | Reads as an eye — a poor emblem for an application whose main promise is privacy |
+
+**To use different artwork instead:** replace `build/icon.png` with a square PNG
+of at least 512×512 (1024 preferred) and skip `npm run icon`. The in-application
+mark is separate and lives in
+[`src/renderer/src/components/Brand.tsx`](../src/renderer/src/components/Brand.tsx),
+where it is about thirty lines of geometry with the constants at the top.
 
 ## 7. What the uninstaller does not do
 
